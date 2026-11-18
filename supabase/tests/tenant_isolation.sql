@@ -8,6 +8,7 @@ insert into auth.users(id,email,email_confirmed_at) values
  ('91000000-0000-4000-8000-000000000002','tenant-candidate@example.test',now()),
  ('91000000-0000-4000-8000-000000000003','tenant-employer@example.test',now());
 insert into public.user_roles(user_id,role) values('91000000-0000-4000-8000-000000000001','admin');
+insert into private.workflow_reviewers values('b2000000-0000-4000-8000-000000000001','91000000-0000-4000-8000-000000000001','profiles');
 insert into public.candidate_profiles(user_id,name,email) values('91000000-0000-4000-8000-000000000002','Private A','tenant-candidate@example.test');
 insert into public.candidate_profiles(tenant_id,user_id,name,email) values('b2000000-0000-4000-8000-000000000002','91000000-0000-4000-8000-000000000002','Private B','tenant-candidate@example.test');
 insert into public.organizations(id,name,status,verification_status,verified_at) values
@@ -42,7 +43,7 @@ select set_config('request.jwt.claim.sub','91000000-0000-4000-8000-000000000001'
 set local role authenticated;
 do $$ begin
  if not private.is_admin() then raise exception 'Tenant admin missing';end if;
- if (select count(*) from public.candidate_profiles)<>1 then raise exception 'Admin boundary leaked';end if;
+ if not exists(select 1 from public.candidate_profiles where name='Private A') or exists(select 1 from public.candidate_profiles where tenant_id<>'b2000000-0000-4000-8000-000000000001') then raise exception 'Scoped reviewer boundary leaked';end if;
  begin insert into public.job_needs(organization_id,title) values('92000000-0000-4000-8000-000000000002','Cross-tenant FK');raise exception 'Cross-tenant relationship accepted';exception when foreign_key_violation then null;end;
  begin update public.organizations set tenant_id='b2000000-0000-4000-8000-000000000002' where id='92000000-0000-4000-8000-000000000001';raise exception 'Ownership transfer accepted';exception when raise_exception then if SQLERRM='Ownership transfer accepted' then raise;end if;end;
 end $$;

@@ -55,8 +55,12 @@ select set_config('request.jwt.claim.sub','11000000-0000-0000-0000-000000000001'
 set local role authenticated;
 do $$ begin
  if not public.user_is_admin() then raise exception 'Admin not recognized';end if;
- if (select count(*) from public.candidate_profiles)<>1 then raise exception 'Admin cannot review candidate';end if;
+ if exists(select 1 from public.candidate_profiles) then raise exception 'Ambient admin can read private profiles without scope';end if;
 end $$;
+reset role;
+insert into private.workflow_reviewers values('b2000000-0000-4000-8000-000000000001','11000000-0000-0000-0000-000000000001','profiles');
+set local role authenticated;
+do $$begin if not exists(select 1 from public.candidate_profiles where user_id='11000000-0000-0000-0000-000000000002') then raise exception 'Scoped reviewer cannot read assigned tenant profile';end if;end $$;
 reset role;
 select 'PASS: anonymous boundaries, expiry, candidate ownership, role escalation, cross-org ownership, consent history, authenticated intake and admin access' as result;
 rollback;

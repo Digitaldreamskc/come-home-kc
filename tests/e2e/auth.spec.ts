@@ -13,8 +13,8 @@ const accounts=fs.existsSync(accountFile)?JSON.parse(fs.readFileSync(accountFile
 if(fs.existsSync('.env.local'))for(const line of fs.readFileSync('.env.local','utf8').split('\n')){const match=line.match(/^([A-Z_]+)=(.*)$/);if(match&&!process.env[match[1]])process.env[match[1]]=match[2].replace(/^['"]|['"]$/g,'');}
 const database=process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-let adminToken='';const orgId=randomUUID(),otherOrgId=randomUUID(),introOrg=randomUUID(),introJob=randomUUID();const marker=`Synthetic browser QA ${randomUUID().slice(0,8)}`;let priorProfile:Row|null=null;let priorConsents:string[]=[];let priorSubmissions:string[]=[];
-async function rest(resource:string,method='GET',data?:unknown){const response=await fetch(`${database}/rest/v1/${resource}`,{method,headers:{'x-tenant-id':tenant.id,apikey:key!,Authorization:`Bearer ${adminToken}`,'Content-Type':'application/json',Prefer:'return=representation'},...(data===undefined?{}:{body:JSON.stringify(data)})});if(!response.ok)throw Error(`Synthetic fixture request failed (${method}, status ${response.status}).`);const text=await response.text();return text?JSON.parse(text):null;}
+let adminToken='',candidateToken='';const orgId=randomUUID(),otherOrgId=randomUUID(),introOrg=randomUUID(),introJob=randomUUID();const marker=`Synthetic browser QA ${randomUUID().slice(0,8)}`;let priorProfile:Row|null=null;let priorSubmissions:string[]=[];
+async function rest(resource:string,method='GET',data?:unknown,token=adminToken){const response=await fetch(`${database}/rest/v1/${resource}`,{method,headers:{'x-tenant-id':tenant.id,apikey:key!,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=representation'},...(data===undefined?{}:{body:JSON.stringify(data)})});if(!response.ok)throw Error(`Synthetic fixture request failed (${method}, status ${response.status}).`);const text=await response.text();return text?JSON.parse(text):null;}
 async function login(page:Page,role:keyof Accounts){await page.goto('/login');await expect(page.getByLabel('Email',{exact:true})).toBeVisible();try{await page.getByLabel('Email',{exact:true}).fill(accounts![role].email);await page.getByLabel('Password',{exact:true}).fill(accounts![role].password);}catch{throw Error('Could not complete synthetic account credentials.');}await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page).toHaveURL(/\/portal(?:\?|$)/);await expect(page.getByRole('heading',{name:'Your connections',exact:true})).toBeVisible();}
 async function portal(page:Page){const response=await page.request.get('/api/portal');expect(response.status()).toBe(200);return await response.json();}
 async function post(page:Page,url:string,data:unknown){return await page.request.post(url,{data,headers:{Origin:new URL(page.url()).origin}});}
@@ -31,9 +31,11 @@ test.describe('authenticated database journeys',()=>{
   const response=await fetch(`${database}/auth/v1/token?grant_type=password`,{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({email:accounts.admin.email,password:accounts.admin.password})});
   if(!response.ok)throw Error('Synthetic administrator authentication failed.');
   adminToken=(await response.json()).access_token;
+  const candidateAuth=await fetch(database+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({email:accounts.candidate.email,password:accounts.candidate.password})});
+  if(!candidateAuth.ok)throw Error('Synthetic candidate authentication failed.');candidateToken=(await candidateAuth.json()).access_token;
   const rows=await rest(`candidate_profiles?user_id=eq.${accounts.candidate.id}`) as Row[];priorProfile=rows[0]||null;
   priorSubmissions=(await rest(`submissions?user_id=eq.${accounts.candidate.id}&select=id`) as Row[]).map(r=>String(r.id));
-  priorConsents=(await rest(`communications_consent?user_id=eq.${accounts.candidate.id}&select=id`) as Row[]).map(r=>String(r.id));
+
   await rest('organizations','POST',{id:introOrg,name:'Synthetic introduction test team',description:'Synthetic validation only',status:'published',verification_status:'verified',verified_at:new Date().toISOString()});
   await rest('job_postings','POST',{id:introJob,organization_id:introOrg,title:'Synthetic introduction test role',description:'Synthetic validation only, not a real opening',status:'active',verified_at:new Date().toISOString(),expires_at:'2099-01-01T00:00:00Z',application_url:'https://example.test',work_mode:'remote',remote_eligible_states:['MO']});
   // Private draft organizations exercise employer ownership without polluting the public catalog.
@@ -45,10 +47,9 @@ test.describe('authenticated database journeys',()=>{
   await rest(`introduction_requests?job_id=eq.${introJob}`,'DELETE');await rest(`job_postings?id=eq.${introJob}`,'DELETE');await rest(`organizations?id=eq.${introOrg}`,'DELETE');
   await rest(`job_postings?organization_id=in.(${orgId},${otherOrgId})`,'DELETE');
   await rest(`organizations?id=in.(${orgId},${otherOrgId})`,'DELETE');
-  await rest(`candidate_profiles?user_id=eq.${accounts.candidate.id}`,'DELETE');
-  if(priorProfile)await rest('candidate_profiles','POST',priorProfile);
-  const added=(await rest(`communications_consent?user_id=eq.${accounts.candidate.id}&select=id`) as Row[]).map(r=>String(r.id)).filter(id=>!priorConsents.includes(id));
-  if(added.length)await rest(`communications_consent?id=in.(${added.join(',')})`,'DELETE');
+  await rest(`candidate_profiles?user_id=eq.${accounts.candidate.id}`,'DELETE',undefined,candidateToken);
+  if(priorProfile)await rest('candidate_profiles','POST',priorProfile,candidateToken);
+  // Consent history remains append-only; restore profile choices through its owner instead.
   const submitted=(await rest(`submissions?user_id=eq.${accounts.candidate.id}&select=id`) as Row[]).map(r=>String(r.id)).filter(id=>!priorSubmissions.includes(id));if(submitted.length)await rest(`submissions?id=in.(${submitted.join(',')})`,'DELETE');
  });
  test('candidate edits a private profile with independent permissions and persists after reload',async({page})=>{

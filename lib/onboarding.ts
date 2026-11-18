@@ -4,7 +4,7 @@ export function onboardingDestination(intent:OnboardingIntent){return intent==='
 export const jobIdPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function introductionDestination(id:string){return jobIdPattern.test(id)?`/portal?view=profile&job=${id}#request-introduction`:'/portal?view=profile';}
 export function safeAuthDestination(value:string|null){
- if(value==='/reset-password')return value;
+ if(value==='/reset-password'||value==='/connections')return value;
  if(!value||!value.startsWith('/portal')||value.includes('\\'))return '/portal';
  try{const u=new URL(value,'https://local.invalid');if(u.origin!=='https://local.invalid'||u.pathname!=='/portal'||[...u.searchParams.keys()].some(k=>!['view','job'].includes(k)))return '/portal';
  const job=u.searchParams.get('job');if(job)return introductionDestination(job);
