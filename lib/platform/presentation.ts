@@ -1,6 +1,7 @@
 import type {ProgramWorkspace} from './program';
 // Exact known demonstration annotations only; never strip arbitrary participant text.
 const fixtureNotes:Record<string,string>={
+ 'Fictional participation: attended the Riverbend board orientation as an observer. Self-reported; not a board appointment.':'Attended the Riverbend board orientation as an observer. Self-reported; not a board appointment.',
  'Synthetic interest: I would like to learn about the responsibilities of this board.':'I would like to learn about the responsibilities of this board.',
  'I would like to understand this fictional board role, its time commitment, and how new members can contribute. Synthetic permission review only.':'I would like to understand this board role, its time commitment, and how new members can contribute.',
  'I would like to understand the fictional board role, its time commitment, and how new members can contribute.':'I would like to understand this board role, its time commitment, and how new members can contribute.',

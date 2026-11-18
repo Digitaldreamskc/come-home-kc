@@ -13,5 +13,6 @@ test('reported participation remains distinct from independently measured impact
 });
 test('only exact known fixture annotations change for display',()=>{
  assert.equal(demonstrationNote('Synthetic interest: I would like to learn about the responsibilities of this board.'),'I would like to learn about the responsibilities of this board.');
+ assert.equal(demonstrationNote('Fictional participation: attended the Riverbend board orientation as an observer. Self-reported; not a board appointment.'),'Attended the Riverbend board orientation as an observer. Self-reported; not a board appointment.');
  assert.equal(demonstrationNote('Synthetic interest: my own research'),'Synthetic interest: my own research');
 });
