@@ -13,7 +13,7 @@ const accounts=fs.existsSync(accountFile)?JSON.parse(fs.readFileSync(accountFile
 if(fs.existsSync('.env.local'))for(const line of fs.readFileSync('.env.local','utf8').split('\n')){const match=line.match(/^([A-Z_]+)=(.*)$/);if(match&&!process.env[match[1]])process.env[match[1]]=match[2].replace(/^['"]|['"]$/g,'');}
 const database=process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-let adminToken='';const orgId=randomUUID(),otherOrgId=randomUUID();const marker=`Synthetic browser QA ${randomUUID().slice(0,8)}`;let priorProfile:Row|null=null;let priorConsents:string[]=[];
+let adminToken='';const orgId=randomUUID(),otherOrgId=randomUUID();const marker=`Synthetic browser QA ${randomUUID().slice(0,8)}`;let priorProfile:Row|null=null;let priorConsents:string[]=[];let priorSubmissions:string[]=[];
 async function rest(resource:string,method='GET',data?:unknown){const response=await fetch(`${database}/rest/v1/${resource}`,{method,headers:{'x-tenant-id':tenant.id,apikey:key!,Authorization:`Bearer ${adminToken}`,'Content-Type':'application/json',Prefer:'return=representation'},...(data===undefined?{}:{body:JSON.stringify(data)})});if(!response.ok)throw Error(`Synthetic fixture request failed (${method}, status ${response.status}).`);const text=await response.text();return text?JSON.parse(text):null;}
 async function login(page:Page,role:keyof Accounts){await page.goto('/login');await expect(page.getByLabel('Email',{exact:true})).toBeVisible();try{await page.getByLabel('Email',{exact:true}).fill(accounts![role].email);await page.getByLabel('Password',{exact:true}).fill(accounts![role].password);}catch{throw Error('Could not complete synthetic account credentials.');}await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page).toHaveURL(/\/portal(?:\?|$)/);await expect(page.getByRole('heading',{name:'Your connections',exact:true})).toBeVisible();}
 async function portal(page:Page){const response=await page.request.get('/api/portal');expect(response.status()).toBe(200);return await response.json();}
@@ -32,6 +32,7 @@ test.describe('authenticated database journeys',()=>{
   if(!response.ok)throw Error('Synthetic administrator authentication failed.');
   adminToken=(await response.json()).access_token;
   const rows=await rest(`candidate_profiles?user_id=eq.${accounts.candidate.id}`) as Row[];priorProfile=rows[0]||null;
+  priorSubmissions=(await rest(`submissions?user_id=eq.${accounts.candidate.id}&select=id`) as Row[]).map(r=>String(r.id));
   priorConsents=(await rest(`communications_consent?user_id=eq.${accounts.candidate.id}&select=id`) as Row[]).map(r=>String(r.id));
   // Private draft organizations exercise employer ownership without polluting the public catalog.
   await rest('organizations','POST',[{id:orgId,name:marker+' owner',status:'draft',verification_status:'verified',verified_at:new Date().toISOString()},{id:otherOrgId,name:marker+' other',status:'draft',verification_status:'verified',verified_at:new Date().toISOString()}]);
@@ -45,9 +46,10 @@ test.describe('authenticated database journeys',()=>{
   if(priorProfile)await rest('candidate_profiles','POST',priorProfile);
   const added=(await rest(`communications_consent?user_id=eq.${accounts.candidate.id}&select=id`) as Row[]).map(r=>String(r.id)).filter(id=>!priorConsents.includes(id));
   if(added.length)await rest(`communications_consent?id=in.(${added.join(',')})`,'DELETE');
+  const submitted=(await rest(`submissions?user_id=eq.${accounts.candidate.id}&select=id`) as Row[]).map(r=>String(r.id)).filter(id=>!priorSubmissions.includes(id));if(submitted.length)await rest(`submissions?id=in.(${submitted.join(',')})`,'DELETE');
  });
  test('candidate edits a private profile with independent permissions and persists after reload',async({page})=>{
-  await login(page,'candidate');await captureLayouts(page,'candidate-profile');
+  await login(page,'candidate');await expect(page.getByLabel('Name',{exact:true})).toBeVisible();await captureLayouts(page,'candidate-profile');
   await page.getByLabel('Name',{exact:true}).fill(marker+' candidate');
   await page.getByLabel('Current city',{exact:true}).fill('Synthetic City');
   await page.getByLabel('Current state',{exact:true}).fill('CO');
@@ -59,6 +61,16 @@ test.describe('authenticated database journeys',()=>{
   await page.reload();await expect(page.getByLabel('Name',{exact:true})).toHaveValue(marker+' candidate');
   const data=await portal(page);expect(data.profile.opportunities_consent).toBe(true);expect(data.profile.introductions_consent).toBe(false);expect(data.profile.user_id).toBe(accounts!.candidate.id);
   expect((await page.request.get('/api/admin?table=candidate_profiles')).status()).toBe(403);
+ });
+ test('employer registration remains private and grants no hiring permissions',async({page})=>{
+  await login(page,'candidate');await page.getByRole('button',{name:'Employer registration',exact:true}).click();await expect(page.getByRole('heading',{name:'Introduce your organization',exact:true})).toBeVisible();await captureLayouts(page,'employer-registration');
+  const data={name:'Synthetic onboarding company',representative_name:'Synthetic representative',representative_role:'People lead',website:'https://example.test',hiring_needs:'Synthetic design role in Missouri',regions:['MO'],authorized_representative:false,verification_contact_consent:true,website_trap:''};
+  expect((await post(page,'/api/portal',{action:'employer_registration',data})).status()).toBe(400);
+  await page.getByLabel('Organization name',{exact:true}).fill(data.name);await page.getByLabel('Your name',{exact:true}).fill(data.representative_name);await page.getByLabel('Your role at the organization',{exact:true}).fill(data.representative_role);await page.getByLabel('Company website (optional)',{exact:true}).fill(data.website);await page.getByLabel('Who are you hoping to hire?',{exact:true}).fill(data.hiring_needs);
+  await page.getByRole('group',{name:'Where are you hiring? (optional)'}).getByRole('checkbox',{name:'Missouri',exact:true}).check();await page.getByRole('checkbox',{name:'I am authorized to represent this organization.',exact:true}).check();await page.getByRole('checkbox',{name:'The team may contact me about this verification request.',exact:true}).check();await page.getByRole('button',{name:'Request employer verification',exact:true}).click();await expect(page.getByRole('heading',{name:'We have your introduction.',exact:true})).toBeVisible();await captureLayouts(page,'employer-review-pending');
+  const saved=await portal(page);expect(saved.memberships).toHaveLength(0);const submission=saved.submissions.find((r:Row)=>r.kind==='employer'&&(r.payload as Row)?.onboarding_version==='1');expect(submission.status).toBe('pending');expect(submission.payload.authorized_representative).toBe(true);expect(submission.payload.verification_contact_consent).toBe(true);expect(submission.payload.email).toBe(accounts!.candidate.email);expect(saved.profile.introductions_consent).toBe(false);
+  expect((await page.request.get('/api/admin?table=submissions')).status()).toBe(403);
+  await page.getByRole('button',{name:'Private profile',exact:true}).click();await page.getByRole('checkbox',{name:'Contact me about professional opportunities.'}).uncheck();await page.getByRole('button',{name:'Save my private profile',exact:true}).click();await expect(page.getByRole('status').first()).toContainText('Saved.');await page.reload();await expect(page.getByRole('checkbox',{name:'Contact me about professional opportunities.'})).not.toBeChecked();expect((await portal(page)).profile.opportunities_consent).toBe(false);
  });
  test('administrator can review records while another account cannot read the candidate profile',async({page,browser})=>{
   await login(page,'admin');await page.goto('/admin');await expect(page.locator('.admin-shell')).toBeVisible();await captureLayouts(page,'admin-overview');await page.getByRole('button',{name:'Review queue',exact:true}).click();await expect(page.getByRole('heading',{name:'Review queue',exact:true})).toBeVisible();await captureLayouts(page,'admin-review');const review=await page.request.get('/api/admin?table=candidate_profiles');expect(review.status()).toBe(200);expect((await review.json()).records.some((r:Row)=>r.user_id===accounts!.candidate.id)).toBe(true);
