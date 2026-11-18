@@ -71,3 +71,7 @@ a{color:inherit}button,a,input,select,summary{touch-action:manipulation}
 .hero-connection-link{display:inline-flex;align-items:center;gap:10px;min-height:44px;margin-top:8px;font-size:16px;font-weight:700;text-underline-offset:4px}
 .result-card .card-kicker,.result-card .location,.result-card .card-details,.result-card .card-note{font-size:15px;color:var(--ink);line-height:1.6}.result-card .card-kicker{font-weight:700}.city-scope{font-weight:400}.employer-invitation--mobile{display:none}
 @media(max-width:767px){.employer-invitation--desktop{display:none}.employer-invitation--mobile{display:flex;grid-column:1 / -1;margin:0}.marketplace-hero .hero-assurance{margin-top:12px}}
+/* Review v4: readable descriptions and a continuous desktop transition. */
+.result-card .card-description{font-size:15px;color:var(--ink)}
+.directory-section{border-top:0;padding-top:0}
+@media(min-width:801px){.marketplace-hero{padding-bottom:16px}.section-heading{padding-top:12px;padding-bottom:12px}.category-tabs{margin-top:8px}}

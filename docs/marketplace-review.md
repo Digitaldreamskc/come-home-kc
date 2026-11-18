@@ -24,3 +24,11 @@ The hero retains two account buttons; Get connected is now a text link beneath t
 City options are explicitly labeled with the selected region. Changing region clears an incompatible city, and stale URLs with an incompatible city now resolve to all cities within the chosen region. Regression tests verify a Missouri selection never offers a Kansas city and capture both filtered results and the no-results state. Each card remains one anchor with the title as its accessible label; keyboard testing verifies one Tab stop per card.
 
 V3 validation: lint, TypeScript, build and 15 unit tests passed. Browser suite: 28 passed, one existing real recovery test skipped. Responsive screenshots refreshed at 1440, 1024, 768, 390 and 375px; scoped-city and empty-state screenshots added.
+
+## Review v4
+
+Card descriptions now use 15px tenant ink, matching the readable metadata. The desktop hero-to-directory transition loses its top border and excess spacing. The zero-results state drops the ambiguous diagonal-arrow icon and promotes Clear filters to the filled primary action, with Get connected secondary.
+
+The single-anchor role card was retained: the underlined title and View role cue are children of the same link, not separate keyboard targets. Browser regression checks advance directly from one role card to the next with Tab. The city regression selects a Kansas city, switches to Missouri, verifies All cities and Missouri-only options, and captures that reset state. The modal regression asserts that the not-a-real-opening sentence appears exactly once.
+
+V4 validation: lint, TypeScript, production build, 15 unit tests and all 18 targeted marketplace browser tests passed. Refreshed desktop/mobile, city-reset, zero-results and role-modal captures. No database schema or production changes.
