@@ -22,3 +22,11 @@
 .privacy-actions{display:flex;flex-wrap:wrap;align-items:center;gap:16px}.private-portal .privacy-actions .text-button{background:transparent;color:var(--ink);border:0;text-decoration:underline}
 .request-history{list-style:none;padding:0}.request-history li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding:20px 0;border-bottom:1px solid var(--line)}.request-history li:last-child{border-bottom:0}.request-history p{margin:6px 0 0}.request-status{align-self:start;padding:6px 12px;border-radius:20px;background:var(--soft);font-size:14px}.review-feedback{flex-basis:100%}
 @media(max-width:767px){.private-portal.account-shell nav.portal-pathways[aria-label] button{border:0;border-bottom:3px solid transparent;background:transparent;color:var(--ink);border-radius:0}.private-portal.account-shell nav.portal-pathways[aria-label] button[aria-pressed=true]{background:transparent;color:var(--ink);border-color:var(--ink)}.confirmation-recovery{padding:24px 20px}}
+
+/* Consistent navigation and compact choices at all widths. */
+.private-portal.account-shell nav.portal-pathways[aria-label] button{border:0;border-bottom:3px solid transparent;background:transparent;color:var(--ink);border-radius:0}
+.private-portal.account-shell nav.portal-pathways[aria-label] button[aria-pressed=true]{background:transparent;color:var(--ink);border-color:var(--ink)}
+.private-portal.account-shell .choice-grid>label{grid-column:auto;margin-right:0}
+.confirmation-actions .text-button:not(:disabled){text-decoration:underline;text-underline-offset:4px}
+.private-portal label>.field-help{display:block}
+@media(max-width:767px){.request-history li{flex-direction:column;align-items:flex-start}.review-feedback{flex-basis:auto}}
