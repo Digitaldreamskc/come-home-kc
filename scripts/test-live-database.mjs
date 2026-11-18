@@ -1,0 +1,18 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+for(const line of (await readFile('.env.local','utf8')).split('\n')){const m=line.match(/^([A-Z_]+)=(.*)$/);if(m&&!process.env[m[1]])process.env[m[1]]=m[2].replace(/^['"]|['"]$/g,'');}
+const accounts=JSON.parse(await readFile('.test-accounts.json','utf8'));const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY||process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;assert.ok(url&&key);const tokens={},passed=[];
+for(const [role,a]of Object.entries(accounts)){const r=await fetch(url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({email:a.email,password:a.password})});const body=await r.json();assert.equal(r.status,200,`${role} signin: ${body.error_description||''}`);tokens[role]=body.access_token;passed.push(`${role} real Auth signin`);}
+async function request(path,role,method='GET',data){const r=await fetch(url+'/rest/v1/'+path,{method,headers:{apikey:key,Authorization:`Bearer ${tokens[role]||key}`,'Content-Type':'application/json',Prefer:'return=representation'},...(data?{body:JSON.stringify(data)}:{})});return {status:r.status,body:await r.json()};}
+let r=await request('rpc/user_is_admin','candidate','POST',{});assert.equal(r.body,false);r=await request('rpc/user_is_admin','admin','POST',{});assert.equal(r.body,true);passed.push('protected administrator role');
+r=await request('candidate_profiles','candidate','POST',{user_id:accounts.candidate.id,name:'Synthetic test person',email:accounts.candidate.email,opportunities_consent:true,introductions_consent:false});assert.equal(r.status,201);passed.push('candidate profile persistence');
+for(const role of ['employer','other',null]){r=await request('candidate_profiles',role);assert.ok(r.status===401||JSON.stringify(r.body)==='[]');}passed.push('candidate profile isolation');
+r=await request('rpc/submit_intake','candidate','POST',{p_kind:'candidate',p_payload:{name:'Synthetic test person',email:'untrusted@example.test'}});assert.equal(r.status,200);const id=r.body;
+r=await request('rpc/submit_intake','candidate','POST',{p_kind:'candidate',p_payload:{name:'Synthetic test person',email:'untrusted@example.test'}});assert.equal(r.body,id);passed.push('intake deduplication');
+r=await request(`submissions?id=eq.${id}`,'admin');assert.equal(r.body[0].payload.email,accounts.candidate.email);passed.push('trusted account email');
+r=await request(`submissions?id=eq.${id}`,'other');assert.deepEqual(r.body,[]);passed.push('submission isolation');
+r=await request(`submissions?id=eq.${id}`,'admin','PATCH',{status:'approved',review_note:'Synthetic test approval',reviewed_by:accounts.admin.id,reviewed_at:new Date().toISOString()});assert.equal(r.status,200);assert.equal(r.body[0].status,'approved');passed.push('administrator approval persisted');
+r=await request(`submissions?id=eq.${id}`,'candidate','PATCH',{status:'approved'});assert.deepEqual(r.body,[]);passed.push('candidate cannot self-approve');
+r=await request('rpc/submit_intake','candidate','POST',{p_kind:'candidate',p_payload:{name:'Synthetic honeypot',website_trap:'spam'}});assert.equal(r.status,400);passed.push('honeypot rejection');
+await request(`submissions?id=eq.${id}`,'admin','DELETE');await request(`candidate_profiles?user_id=eq.${accounts.candidate.id}`,'admin','DELETE');
+const result={project:'fgmduywfdlvomgbnibzk',executed_at:new Date().toISOString(),passed,failed:0};await writeFile('docs/live-database-tests.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result,null,2));

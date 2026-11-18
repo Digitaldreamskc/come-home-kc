@@ -1,0 +1,20 @@
+{
+  "project": "fgmduywfdlvomgbnibzk",
+  "executed_at": "2026-11-18T02:32:54.976Z",
+  "passed": [
+    "admin real Auth signin",
+    "candidate real Auth signin",
+    "employer real Auth signin",
+    "other real Auth signin",
+    "protected administrator role",
+    "candidate profile persistence",
+    "candidate profile isolation",
+    "intake deduplication",
+    "trusted account email",
+    "submission isolation",
+    "administrator approval persisted",
+    "candidate cannot self-approve",
+    "honeypot rejection"
+  ],
+  "failed": 0
+}

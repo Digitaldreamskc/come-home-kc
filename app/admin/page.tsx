@@ -1,0 +1,2 @@
+import { session } from '@/lib/supabase';import { redirect } from 'next/navigation';import Admin from './workspace';
+export default async function Page(){const {db,user}=await session();if(!user)redirect('/login');const {data}=await db.rpc('user_is_admin');if(data!==true)return <main className="account-shell"><h1>Administrator access required</h1><p>This account has not been assigned a team administrator role.</p><a href="/portal">Return to your account</a></main>;return <Admin/>;}

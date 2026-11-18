@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.env*
+!.env.example
+.vercel/
+playwright-report/
+test-results/
+*.tsbuildinfo
+# Historical records include private contacts and source links; preserve locally.
+legacy/
+# Review reports may include personal data and belong in private records.
+docs/*raw*.json
+
+.test-accounts.json
