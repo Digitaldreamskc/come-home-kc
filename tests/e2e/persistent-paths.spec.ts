@@ -59,3 +59,32 @@ test('retrieves the same persisted attempt after the local server restarts',asyn
  expect(saved.state).toBe('introduced');expect(saved.events.some((e:{kind:string})=>e.kind==='not_yet')).toBe(true);
  await page.getByRole('button',{name:'Requests',exact:true}).click();await expect(page.locator(`[data-attempt-id="${evidence.attemptId}"]`)).toBeVisible();
 });
+test('persistent history attributes consent and stacks mobile timeline labels above statuses',async({page})=>{
+ const evidence=JSON.parse(fs.readFileSync('outputs/phase2-persistence-evidence.json','utf8')) as {attemptId:string;requestId:string};
+ await login(page,'candidate');await page.getByRole('button',{name:'Requests',exact:true}).click();
+ const saved=page.locator(`[data-attempt-id="${evidence.attemptId}"]`),closed=page.locator(`[data-attempt-id="${evidence.requestId}"]`);
+ await expect(saved.getByRole('heading',{name:'Did you and Riley Brooks connect?'})).toBeVisible();
+ await expect(saved.getByRole('button',{name:'Show Riley Brooks’s email'})).toBeVisible();
+ await expect(saved.locator('.path-deadline')).toContainText('Introduced');
+ await expect(saved.locator('.path-deadline')).not.toContainText('expire');
+ await saved.getByText('History & consent records',{exact:true}).click();
+ const history=saved.getByRole('region',{name:'Request history'}),consents=saved.getByRole('region',{name:'Consent records'});
+ await expect(history.getByText('Review team — Route approved',{exact:true})).toBeVisible();
+ await expect(history.getByText('Review team — Handoff approved',{exact:true})).toBeVisible();
+ const emailRows=consents.locator('.path-consent-record').filter({hasText:'Share my email only'});
+ await expect(emailRows.filter({hasText:'Alex Morgan'})).toContainText('Not permitted');
+ await expect(emailRows.filter({hasText:'Riley Brooks'})).toContainText('Agreed');
+ await expect(closed.locator('.persistent-timeline')).toContainText('Request submitted');
+ await expect(closed.locator('.persistent-timeline')).toContainText('Closed, changes requested');
+ await expect(closed.locator('.persistent-timeline')).not.toContainText('Not started');
+ for(const width of [1440,1024,768,390,375]){
+  await page.setViewportSize({width,height:1000});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  if(width<600)for(const card of [saved,closed])for(const step of await card.locator('.persistent-timeline li').all()){
+   const title=await step.locator('strong').boundingBox(),status=await step.locator('small').boundingBox();
+   expect(title!.width).toBeGreaterThan(200);expect(status!.y).toBeGreaterThanOrEqual(title!.y+title!.height);
+  }
+  await saved.screenshot({path:path.resolve(`outputs/polished-saved-not-yet-${width}.png`)});
+  await closed.screenshot({path:path.resolve(`outputs/polished-changes-requested-${width}.png`)});
+ }
+});
