@@ -16,7 +16,7 @@
 - Account export downloads the currently loaded account records. Complete consent/history export and deletion fulfillment require an operator workflow.
 - Event discovery links to external RSVP services. The schema supports event associations; a dedicated association editor is still needed.
 - New2KC form responses, private browser changes and Social Balances records are imported only through an explicitly authorized, reviewed process.
-- File uploads, password-reset/self-service recovery, automated expiry reminders and a public impact report are future work. Production email, retention and backup procedures need operating decisions before public launch.
+- File uploads, automated expiry reminders and a public impact report are future work. Production email, retention and backup procedures need operating decisions before public launch.
 
 ## New2KC form integration
 
@@ -31,3 +31,5 @@ Companies can receive a concise regional picture of what participating teams are
 ## Later integration
 
 Connect approved public entities and permissioned relationship outcomes to Social Balances using stable identifiers, provenance and scoped access. Add a useful weekly dashboard from real activity: reviewed conversations, pending verification, overdue follow-ups and permissioned introduction stages. Expand event participation tools only after the everyday workflow is manageable. Multi-city licensing and advanced matching can follow when operations, data quality and permissions are established.
+
+Password recovery and password visibility controls are implemented. See account-access.md for remaining email delivery and redirect setup.
