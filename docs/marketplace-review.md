@@ -16,3 +16,11 @@ Regression coverage in `tests/e2e/marketplace-review.spec.ts` checks mobile menu
 No database schema, RLS policy, provider integration or production configuration was changed in this review pass. Existing isolated-database browser journeys remain part of the validation suite. Full screen-reader certification and real email-recovery acceptance remain separate outstanding work.
 
 Validation: ESLint, TypeScript and production build passed; 15 unit tests passed; 26 browser tests passed with one existing real email-recovery test skipped. Screenshots regenerated at all five required widths, plus mobile menu and demo role details.
+
+## Review v3
+
+The hero retains two account buttons; Get connected is now a text link beneath them. The employer invitation follows the third role on mobile (or the final role when fewer than three match), while retaining its desktop position. Card company, location, employment and disclaimer metadata use 15px tenant ink. The dialog no longer repeats the not-a-real-opening sentence.
+
+City options are explicitly labeled with the selected region. Changing region clears an incompatible city, and stale URLs with an incompatible city now resolve to all cities within the chosen region. Regression tests verify a Missouri selection never offers a Kansas city and capture both filtered results and the no-results state. Each card remains one anchor with the title as its accessible label; keyboard testing verifies one Tab stop per card.
+
+V3 validation: lint, TypeScript, build and 15 unit tests passed. Browser suite: 28 passed, one existing real recovery test skipped. Responsive screenshots refreshed at 1440, 1024, 768, 390 and 375px; scoped-city and empty-state screenshots added.
