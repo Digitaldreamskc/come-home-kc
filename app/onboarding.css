@@ -4,3 +4,15 @@
 @media(max-width:767px){.onboarding-shell,.private-portal{padding:20px 16px 48px}.onboarding-header{gap:16px;margin-bottom:24px}.onboarding-header .product-title{display:none}.onboarding-header>a:last-child{max-width:140px;text-align:right}.access-grid{grid-template-columns:1fr}.access-story{padding:28px 24px}.access-story h1{font-size:34px}.onboarding-steps{margin:20px 0}.onboarding-steps li{margin:14px 0}.access-panel{padding:24px 20px}.private-portal .profile-fields{grid-template-columns:1fr;gap:18px}.private-portal section{padding:24px 20px}.private-portal .portal-pathways{flex-wrap:wrap}.private-portal .portal-pathways>button{flex:1 1 120px;font-size:14px}.private-portal .portal-brand .product-title{display:none}.private-portal fieldset{padding:16px}.private-portal h1{font-size:34px}.private-portal .region-choices{gap:12px}.private-portal .privacy-badge{font-size:13px}.private-portal form>button{width:100%}}
 .access-story p{color:inherit}
 @media(max-width:767px){.access-story .onboarding-steps{display:none}.access-story .access-assurance{margin-bottom:0;padding-top:16px}.access-story h1{margin:14px 0}.access-story>p{font-size:16px;line-height:1.6}}
+/* Account navigation uses the marketplace's quiet navy selected state. */
+.private-portal.account-shell nav.portal-pathways[aria-label] button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.private-portal .portal-pathways{flex-wrap:nowrap}.private-portal .portal-pathways>button{flex:1;min-width:0}
+.private-portal .signout-link,.private-portal .alternate-role button{background:transparent;color:var(--ink);border:0;text-decoration:underline;font-weight:400;box-shadow:none;padding:8px 0}
+.private-portal .alternate-role{margin:8px 0 20px}.private-portal .alternate-role button{text-align:left}
+.private-portal .choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.private-portal .inline-save-status:empty{display:none}.private-portal .inline-save-status:not(:empty){padding:16px;background:var(--soft);border-left:4px solid var(--blue);border-radius:6px}
+.private-portal #request-introduction{scroll-margin-top:24px}.private-portal details summary{min-height:44px;cursor:pointer;padding:12px 0}
+.selected-role{background:var(--soft);padding:20px;border-radius:8px}.selected-role strong{font-size:20px}
+.access-panel .form-message:not(:empty){background:var(--soft);border:0;border-left:4px solid var(--blue);padding:20px;line-height:1.7}
+.confirmation-actions{font-size:15px;overflow-wrap:anywhere}.confirmation-actions button{display:block;min-height:44px;text-align:left}.confirmation-actions button:disabled{cursor:default;opacity:1;color:var(--muted);text-decoration:none}
+@media(max-width:767px){.private-portal .choice-grid{grid-template-columns:1fr}.private-portal .portal-pathways>button{flex:1 1 0}.private-portal .portal-pathways{gap:6px}}
