@@ -9,7 +9,8 @@ const cookie='back2kc-path-review';
 const id=z.string().min(1).max(100),note=z.string().max(500);
 const action=z.discriminatedUnion('type',[
  z.object({type:z.literal('draft'),pathId:id,note,shareContext:z.boolean(),shareEmail:z.boolean()}).strict(),
- z.object({type:z.literal('transition'),requestId:id,to:z.enum(['submitted','connector_reviewing','connector_declined','connector_accepted','recipient_reviewing','recipient_declined','recipient_accepted','introduced','replied','completed','cancelled']),consent:z.boolean().optional(),shareEmail:z.boolean().optional(),note:note.optional()}).strict(),
+ z.object({type:z.literal('transition'),requestId:id,to:z.enum(['team_declined','changes_requested','submitted','connector_reviewing','connector_declined','connector_accepted','recipient_reviewing','recipient_declined','recipient_accepted','introduced','replied','completed','cancelled']),consent:z.boolean().optional(),shareEmail:z.boolean().optional(),note:note.optional()}).strict(),
+ z.object({type:z.literal('followup'),requestId:id,connected:z.boolean(),note}).strict(),
  z.object({type:z.literal('pause'),pathId:id,paused:z.boolean()}).strict(),
  z.object({type:z.literal('confirm'),pathId:id,edgeId:id,visible:z.boolean(),willing:z.boolean()}).strict(),
  z.object({type:z.literal('verify'),pathId:id,edgeId:id,evidence:note}).strict(),

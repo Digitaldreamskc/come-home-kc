@@ -32,3 +32,15 @@ The same state model and components accept another tenant/workspace. `PATH_DEMO_
 This milestone deliberately does not add hosted schema or migrations. Existing Supabase migrations and RLS are unchanged. Persistent relationship/request/audit tables, real authenticated participant membership, transactional state changes, RLS integration tests, retention and deletion handling, and verified notification delivery must be implemented and validated before accepting real people or relationship evidence. In-memory transition tests are not evidence of database RLS readiness. No provider is activated and no messages are sent by this module.
 
 The existing Gmail delivery activation boundary and deployment hold still apply.
+
+## Review refinements
+
+Primary consent actions remain enabled until a request is in flight. Submitting without context permission shows an inline error and focuses the permission control. Connector and recipient Accept buttons are themselves the explicit consent action; email sharing remains independently optional and unchecked.
+
+The tracker lists outcomes, including both team approvals, and distinguishes a current step from a completed event. Contact details appear near the top with the name of the person who shared them. Both participants' email choices remain visible separately.
+
+At any team review gate, a reviewer may decline or send the request back with a required explanation. Both close that review attempt. A revision creates a new private draft with new permissions and no inherited participant approvals; the old attempt remains in history. Direct API calls cannot reopen a closed attempt.
+
+Follow-up asks whether the participants connected, with Yes / Not yet and an optional note. Not yet keeps the request open. Private follow-up text is projected only to the requester and team; other authorized participants can see the connection status but not the note. No follow-up triggers a message or email.
+
+The local synthetic-review banner stays visible until this module is ready for real authenticated participants. It is not a production launch banner.

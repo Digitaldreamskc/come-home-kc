@@ -20,4 +20,23 @@ test('notes enforce 500 characters, LinkedIn is optional and never confirms rela
 test('connector can request more information without accepting or exposing new contacts',()=>{const w=draft();move(w,'requester','submitted');move(w,'admin','connector_reviewing');applyAction(w,'jordan',{type:'information',requestId:w.requests[0].id,note:'Which part of this role interests you?'},now);assert.equal(w.requests[0].state,'connector_reviewing');assert.equal(project(w,'recipient',now).requests.length,0);assert.throws(()=>applyAction(w,'avery',{type:'information',requestId:w.requests[0].id,note:'intrude'},now));});
 test('module can use another tenant destination without sharing data',()=>{const a=draft(),b=createWorkspace('other','tenant-b',now,true);assert.match(b.module.destination,/civic/);assert.equal(project(b,'requester',now).requests.length,0);assert.throws(()=>applyAction(b,'admin',{type:'transition',requestId:a.requests[0].id,to:'connector_reviewing'},now));});
 test('local session token cannot cross tenants and expires independently of user input',()=>{const {token,session}=createSession('tenant-a');assert.equal(getSession(token,'tenant-a').workspace.id,session.workspace.id);assert.throws(()=>getSession(token,'tenant-b'));assert.throws(()=>getSession('unknown','tenant-a'));session.expires=0;assert.throws(()=>getSession(token,'tenant-a'));});
+
+test('team may return or decline at each handoff; revisions cannot inherit approvals',()=>{
+ for(const stage of ['submitted','connector_accepted','recipient_accepted'] as const){
+  const w=draft();move(w,'requester','submitted');if(stage!=='submitted'){move(w,'admin','connector_reviewing');move(w,'jordan','connector_accepted',true);}if(stage==='recipient_accepted'){move(w,'admin','recipient_reviewing');move(w,'recipient','recipient_accepted',true,true);}
+  assert.throws(()=>move(w,'requester','team_declined'));assert.throws(()=>move(w,'admin','changes_requested'));
+  move(w,'admin','changes_requested',false,false,'Please clarify the goal.');const previous=w.requests[0];assert.throws(()=>move(w,'admin','connector_reviewing'));assert.throws(()=>move(w,'admin','introduced',false,false,'Bypass'));
+  applyAction(w,'requester',{type:'draft',pathId:'jordan',note:'Revised goal',shareContext:false,shareEmail:false},now);assert.equal(w.requests.length,2);assert.notEqual(w.requests[1].id,previous.id);assert.equal(w.requests[1].events.length,0);assert.equal(w.requests[1].shareRecipientEmail,false);assert.equal(project(w,'admin',now).requests.length,1);
+  assert.throws(()=>applyAction(w,'requester',{type:'transition',requestId:w.requests[1].id,to:'submitted'},now));
+ }
+ const w=draft();move(w,'requester','submitted');move(w,'admin','team_declined');assert.throws(()=>move(w,'admin','connector_reviewing'));assert.equal(project(w,'recipient',now).requests.length,0);
+});
+
+test('follow-up accepts no note, keeps not-yet open, and hides private notes from other participants',()=>{
+ const w=recipientStage();move(w,'recipient','recipient_accepted',true,true);const action={type:'followup' as const,requestId:w.requests[0].id,connected:false,note:'Private scheduling detail'};
+ assert.throws(()=>applyAction(w,'requester',action,now));move(w,'admin','introduced',false,false,'Team coordinated.');assert.throws(()=>applyAction(w,'recipient',action,now));
+ applyAction(w,'requester',action,now);assert.equal(w.requests[0].state,'introduced');assert.ok(JSON.stringify(project(w,'admin',now)).includes('Private scheduling detail'));
+ for(const actor of ['jordan','recipient'] as const)assert.ok(!JSON.stringify(project(w,actor,now)).includes('Private scheduling detail'));
+ applyAction(w,'requester',{...action,connected:true,note:''},now);assert.equal(w.requests[0].state,'replied');move(w,'requester','completed');assert.equal(w.requests[0].state,'completed');
+});
 test('demo gate refuses remote hosts and hosted execution even with local demo enabled',()=>{const enabled=process.env.ENABLE_LOCAL_DEMO,hosted=process.env.VERCEL;try{process.env.ENABLE_LOCAL_DEMO='1';delete process.env.VERCEL;assert.equal(demoAllowed('127.0.0.1:3100'),true);assert.equal(demoAllowed('public.example'),false);process.env.VERCEL='1';assert.equal(demoAllowed('localhost:3100'),false);delete process.env.VERCEL;delete process.env.ENABLE_LOCAL_DEMO;assert.equal(demoAllowed('localhost:3100'),false);}finally{if(enabled===undefined)delete process.env.ENABLE_LOCAL_DEMO;else process.env.ENABLE_LOCAL_DEMO=enabled;if(hosted===undefined)delete process.env.VERCEL;else process.env.VERCEL=hosted;}});
