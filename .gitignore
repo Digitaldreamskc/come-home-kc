@@ -12,3 +12,6 @@ legacy/
 docs/*raw*.json
 
 .test-accounts.json
+
+/work/
+/outputs/

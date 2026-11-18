@@ -1,4 +1,5 @@
 begin;
+select set_config('request.headers','{"x-tenant-id":"b2000000-0000-4000-8000-000000000001"}',true);
 do $$ declare org uuid; job uuid; loc uuid; begin
  insert into public.organizations(name,status,verification_status,verified_at) values('Synthetic geography employer','published','verified',now()) returning id into org;
  begin

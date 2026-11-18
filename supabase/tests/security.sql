@@ -1,5 +1,6 @@
 -- Transactional tests with synthetic users. All test data is rolled back.
 begin;
+select set_config('request.headers','{"x-tenant-id":"b2000000-0000-4000-8000-000000000001"}',true);
 insert into auth.users(id,email,email_confirmed_at) values
  ('11000000-0000-0000-0000-000000000001','synthetic-admin@example.test',now()),
  ('11000000-0000-0000-0000-000000000002','synthetic-talent@example.test',now()),

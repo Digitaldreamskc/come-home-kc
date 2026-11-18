@@ -1,3 +1,4 @@
+import { tenant } from '../../lib/tenant-config';
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,11 +14,13 @@ if(fs.existsSync('.env.local'))for(const line of fs.readFileSync('.env.local','u
 const database=process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 let adminToken='';const orgId=randomUUID(),otherOrgId=randomUUID();const marker=`Synthetic browser QA ${randomUUID().slice(0,8)}`;let priorProfile:Row|null=null;let priorConsents:string[]=[];
-async function rest(resource:string,method='GET',data?:unknown){const response=await fetch(`${database}/rest/v1/${resource}`,{method,headers:{apikey:key!,Authorization:`Bearer ${adminToken}`,'Content-Type':'application/json',Prefer:'return=representation'},...(data===undefined?{}:{body:JSON.stringify(data)})});if(!response.ok)throw Error(`Synthetic fixture request failed (${method}, status ${response.status}).`);const text=await response.text();return text?JSON.parse(text):null;}
+async function rest(resource:string,method='GET',data?:unknown){const response=await fetch(`${database}/rest/v1/${resource}`,{method,headers:{'x-tenant-id':tenant.id,apikey:key!,Authorization:`Bearer ${adminToken}`,'Content-Type':'application/json',Prefer:'return=representation'},...(data===undefined?{}:{body:JSON.stringify(data)})});if(!response.ok)throw Error(`Synthetic fixture request failed (${method}, status ${response.status}).`);const text=await response.text();return text?JSON.parse(text):null;}
 async function login(page:Page,role:keyof Accounts){await page.goto('/login');await expect(page.getByLabel('Email',{exact:true})).toBeVisible();try{await page.getByLabel('Email',{exact:true}).fill(accounts![role].email);await page.getByLabel('Password',{exact:true}).fill(accounts![role].password);}catch{throw Error('Could not complete synthetic account credentials.');}await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page).toHaveURL(/\/portal(?:\?|$)/);await expect(page.getByRole('heading',{name:'Your connections',exact:true})).toBeVisible();}
 async function portal(page:Page){const response=await page.request.get('/api/portal');expect(response.status()).toBe(200);return await response.json();}
 async function post(page:Page,url:string,data:unknown){return await page.request.post(url,{data,headers:{Origin:new URL(page.url()).origin}});}
 
+
+async function captureLayouts(page:Page,name:string){for(const width of [1440,1024,768,390,375]){await page.setViewportSize({width,height:1000});await page.evaluate(()=>document.fonts.ready);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:path.resolve('outputs/'+name+'-'+width+'.png'),fullPage:true});}}
 test.use({trace:'off',screenshot:'off',video:'off'});
 
 test.describe('authenticated database journeys',()=>{
@@ -44,7 +47,7 @@ test.describe('authenticated database journeys',()=>{
   if(added.length)await rest(`communications_consent?id=in.(${added.join(',')})`,'DELETE');
  });
  test('candidate edits a private profile with independent permissions and persists after reload',async({page})=>{
-  await login(page,'candidate');
+  await login(page,'candidate');await captureLayouts(page,'candidate-profile');
   await page.getByLabel('Name',{exact:true}).fill(marker+' candidate');
   await page.getByLabel('Current city',{exact:true}).fill('Synthetic City');
   await page.getByLabel('Current state',{exact:true}).fill('CO');
@@ -58,12 +61,12 @@ test.describe('authenticated database journeys',()=>{
   expect((await page.request.get('/api/admin?table=candidate_profiles')).status()).toBe(403);
  });
  test('administrator can review records while another account cannot read the candidate profile',async({page,browser})=>{
-  await login(page,'admin');const review=await page.request.get('/api/admin?table=candidate_profiles');expect(review.status()).toBe(200);expect((await review.json()).records.some((r:Row)=>r.user_id===accounts!.candidate.id)).toBe(true);
+  await login(page,'admin');await page.goto('/admin');await expect(page.locator('.admin-shell')).toBeVisible();await captureLayouts(page,'admin-overview');await page.getByRole('button',{name:'Review queue',exact:true}).click();await expect(page.getByRole('heading',{name:'Review queue',exact:true})).toBeVisible();await captureLayouts(page,'admin-review');const review=await page.request.get('/api/admin?table=candidate_profiles');expect(review.status()).toBe(200);expect((await review.json()).records.some((r:Row)=>r.user_id===accounts!.candidate.id)).toBe(true);
   const context=await browser.newContext({baseURL:new URL(page.url()).origin});try{const other=await context.newPage();await login(other,'other');const data=await portal(other);expect(data.profile?.user_id===accounts!.candidate.id).toBe(false);expect((await other.request.get('/api/admin?table=candidate_profiles')).status()).toBe(403);}finally{await context.close();}
  });
  test('verified employer submits and edits a pending job; cross-organization writes are rejected',async({page})=>{
   await login(page,'employer');await page.getByRole('button',{name:'Submit a job opening',exact:true}).click();
-  await page.getByLabel('Verified company',{exact:true}).selectOption(orgId);
+  await captureLayouts(page,'employer-form');await page.getByLabel('Verified company',{exact:true}).selectOption(orgId);
   await page.getByLabel('Job title',{exact:true}).fill(marker+' opening');
   await page.getByLabel('Description and actual work location',{exact:true}).fill('Synthetic browser test. Remote work eligible in Kansas only.');
   await page.getByLabel('Work style',{exact:true}).selectOption('remote');
