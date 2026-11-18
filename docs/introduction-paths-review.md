@@ -44,3 +44,5 @@ At any team review gate, a reviewer may decline or send the request back with a 
 Follow-up asks whether the participants connected, with Yes / Not yet and an optional note. Not yet keeps the request open. Private follow-up text is projected only to the requester and team; other authorized participants can see the connection status but not the note. No follow-up triggers a message or email.
 
 The local synthetic-review banner stays visible until this module is ready for real authenticated participants. It is not a production launch banner.
+
+Review feedback is shown directly on returned-request cards above the revision action, with the original review deadline outside history. Consent validation appears inside an outlined permission group. Unreached milestones consistently say Not started; the introduction status and milestone both say Introduction made. Workspace tabs remain transparent with an underline on desktop and mobile, including hover and pressed states. Discovery explains that synthetic routes use demonstration order rather than a relationship-strength ranking.

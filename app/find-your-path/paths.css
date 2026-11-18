@@ -5,3 +5,5 @@
 
 .path-consent input[type=radio]{padding:0;flex-shrink:0}
 .path-consent label:has(textarea){display:block}.path-consent label:has(textarea) textarea{width:100%}
+
+.path-consent-invalid{border:2px solid #a82635}.path-consent-invalid legend{color:#86222f}.path-review-feedback{margin-top:24px;padding:18px 22px;border-left:4px solid var(--gold);background:var(--soft);border-radius:8px}.path-review-feedback[hidden]{display:none}.path-deadline{font-size:14px;color:#435964}.path-shell .path-tabs button,.path-shell .path-tabs button:hover,.path-shell .path-tabs button:active,.path-shell .path-tabs button:focus{background:transparent;border-radius:0;color:var(--ink)}.path-shell .path-tabs button:hover{text-decoration:underline;text-underline-offset:5px}
