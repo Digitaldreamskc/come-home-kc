@@ -10,7 +10,7 @@ type Row=Record<string,unknown>;
 const accountFile=path.resolve('.test-accounts.json');
 const accounts=fs.existsSync(accountFile)?JSON.parse(fs.readFileSync(accountFile,'utf8')) as Accounts:null;
 // Read only local fixture configuration. Neither credentials nor access tokens enter reports.
-if(fs.existsSync('.env.local'))for(const line of fs.readFileSync('.env.local','utf8').split('\n')){const match=line.match(/^([A-Z_]+)=(.*)$/);if(match&&!process.env[match[1]])process.env[match[1]]=match[2].replace(/^['"]|['"]$/g,'');}
+if(fs.existsSync('.env.local'))for(const line of fs.readFileSync('.env.local','utf8').split(/\r?\n/)){const match=line.match(/^([A-Z_]+)=(.*)$/);if(match&&!process.env[match[1]])process.env[match[1]]=match[2].replace(/^['"]|['"]$/g,'');}
 const database=process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 let adminToken='',candidateToken='';const orgId=randomUUID(),otherOrgId=randomUUID(),introOrg=randomUUID(),introJob=randomUUID();const marker=`Synthetic browser QA ${randomUUID().slice(0,8)}`;let priorProfile:Row|null=null;let priorSubmissions:string[]=[];

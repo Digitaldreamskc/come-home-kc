@@ -15,3 +15,5 @@ docs/*raw*.json
 
 /work/
 /outputs/
+
+.civic-test-accounts.json

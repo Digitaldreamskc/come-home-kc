@@ -3,8 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { TenantConfig } from '@/lib/tenant-config';
 
-export function BrandIdentity({config}:{config:TenantConfig}) {
- return <Link href="/" className="wordmark" aria-label={config.product+' home'}>{config.logo&&<Image src={config.logo} alt={config.name} width={120} height={96} unoptimized loading="eager"/>}<span className="product-title">{config.product}</span></Link>;
+export function BrandIdentity({config,homeHref='/'}:{config:TenantConfig;homeHref?:string}) {
+ return <Link href={homeHref} className="wordmark" aria-label={config.product+' home'}>{config.logo&&<Image src={config.logo} alt={config.name} width={120} height={96} unoptimized loading="eager"/>}<span className="product-title">{config.product}</span></Link>;
 }
 
 /** Native buttons remain reachable by Tab; arrow keys move focus and selection. */

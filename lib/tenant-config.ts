@@ -9,7 +9,7 @@ export const tenantSchema = z.object({
   logo: z.string().regex(/^\/[a-zA-Z0-9/_.-]+$/).nullable(),
   geography: z.array(z.object({key:z.string().regex(/^[a-zA-Z0-9-]+$/),label:z.string().min(1)})).min(2),
   tokens: z.object({blue:color,gold:color,ink:color,paper:color,soft:color,muted:color,headingFont:z.string(),bodyFont:z.string(),radius:z.number().min(0).max(32),maxWidth:z.number().min(960).max(1600)}),
-  modules: z.object({talent:z.literal(true),resources:z.boolean(),employers:z.literal(true),ai:z.literal(false),connectors:z.literal(false)}),
+  modules: z.object({talent:z.boolean(),resources:z.boolean(),employers:z.boolean(),ai:z.literal(false),connectors:z.literal(false)}),
   freeCoreAccess:z.literal(true), humanReviewedIntroductions:z.literal(true), synthetic:z.boolean()
 }).strict().refine(v=>v.geography[0].key==='all'&&new Set(v.geography.map(r=>r.key)).size===v.geography.length,'Unique geography with all first is required');
 export type TenantConfig = z.infer<typeof tenantSchema>;
