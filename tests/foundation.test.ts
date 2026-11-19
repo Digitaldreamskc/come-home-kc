@@ -8,7 +8,9 @@ test('tenant config fails closed and preserves free access and human review',()=
  assert.throws(()=>getTenant('unknown'));
  assert.equal(tenantSchema.safeParse({...getTenant(),freeCoreAccess:false}).success,false);
  assert.equal(tenantSchema.safeParse({...getTenant(),geography:[{key:'MO',label:'MO'}]}).success,false);
- assert.equal(designTokens(getTenant())['--gold'],'#F7B733');
+ assert.equal(designTokens(getTenant())['--gold'],'#FDB924');
+ assert.equal(designTokens(getTenant())['--ink'],'#171919');
+ assert.equal(designTokens(getTenant())['--blue'],'#00AEEF');
 });
 test('a second synthetic geography filters with the same shared implementation',()=>{
  const config=getTenant('synthetic');const keys=config.geography.map(r=>r.key);const data=demoCatalog(config);

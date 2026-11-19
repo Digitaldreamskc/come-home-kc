@@ -5,7 +5,7 @@
   "communityName":"New2KC","communityUrl":"https://docs.google.com/forms/d/e/1FAIpQLSfnWTbHNmGrOPfWz_tdE9hk7dEjGWouoVOy1PGzN967kufAWA/viewform",
   "logo":"/brand/back2kc.png",
   "geography":[{"key":"all","label":"All KC"},{"key":"MO","label":"Missouri"},{"key":"KS","label":"Kansas"}],
-  "tokens":{"blue":"#00AEEF","gold":"#F7B733","ink":"#062D43","paper":"#FFFFFF","soft":"#F5F7FA","muted":"#53616A","headingFont":"Montserrat, Inter, Arial, sans-serif","bodyFont":"Lato, Aptos, Arial, sans-serif","radius":14,"maxWidth":1360},
+  "tokens":{"blue":"#00AEEF","gold":"#FDB924","ink":"#171919","paper":"#FFFEFB","soft":"#F4F3EE","muted":"#565D60","headingFont":"\"ITC Avant Garde Gothic Pro\", \"Avant Garde\", Arial, sans-serif","bodyFont":"\"ITC Avant Garde Gothic Pro\", \"Avant Garde\", Arial, sans-serif","radius":18,"maxWidth":1360},
   "modules":{"talent":true,"resources":true,"employers":true,"ai":false,"connectors":false},
   "freeCoreAccess":true,"humanReviewedIntroductions":true,"synthetic":false
 }

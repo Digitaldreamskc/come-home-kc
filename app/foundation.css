@@ -5,18 +5,22 @@ a{color:inherit}button,a,input,select,summary{touch-action:manipulation}
 :focus-visible{outline:3px solid var(--ink);outline-offset:4px}
 .header-inner,.marketplace-hero,.directory-section,.connection-banner,.site-footer{max-width:var(--content-width);margin-inline:auto;width:calc(100% - 64px)}
 .site-header{border-top:5px solid var(--blue);background:var(--paper)}
-.header-inner{padding:20px 0;min-height:132px;gap:24px}
-.wordmark{display:flex;align-items:center;gap:28px;letter-spacing:normal;white-space:normal}
+.header-inner{padding:20px 0;min-height:0;gap:24px}
+.wordmark{display:flex;align-items:center;gap:28px;letter-spacing:normal;white-space:normal;color:var(--ink);text-decoration:none}
 .wordmark img{width:120px;height:auto;object-fit:contain;flex-shrink:0}
 .wordmark .product-title{background:none;color:var(--ink);border-radius:0;padding:0;font-size:21px;max-width:170px;line-height:1.2}
+.wordmark.wordmark-heart{flex-direction:column;align-items:flex-start;gap:0;line-height:1.1}
+.wordmark.wordmark-heart .wordmark-line{display:inline-flex;align-items:center;width:auto;height:auto;margin:0;padding:0;background:none;white-space:nowrap;font-family:var(--heading-font);font-weight:900;font-size:23px;letter-spacing:-1.3px}
+.wordmark.wordmark-heart .wordmark-kc{display:inline-flex;align-items:center;justify-content:center;width:2.35em;height:2.1em;margin-left:2px;padding-bottom:.2em;background:center/contain no-repeat;letter-spacing:-.4px;color:var(--ink)}
+.wordmark-heart small{display:block;margin-top:6px;font-size:9px;font-weight:700;letter-spacing:2.2px;white-space:nowrap}
 .header-inner nav{gap:24px;flex-wrap:wrap}.header-inner nav a{min-height:44px;display:inline-flex;align-items:center}
 .marketplace-hero{padding:64px 0 52px;border-bottom:1px solid var(--line)}
-.marketplace-hero h1{max-width:850px;font-size:clamp(34px,4.1vw,58px);line-height:1.12;letter-spacing:-1.8px;margin:16px 0 22px}
+.marketplace-hero h1{max-width:850px;font-size:clamp(42px,5.2vw,72px);line-height:1.12;letter-spacing:-.045em;font-weight:700;margin:16px 0 22px}
 .marketplace-hero>p:not(.eyebrow){max-width:750px;font-size:19px;line-height:1.6}
 .marketplace-hero .hero-assurance{font-size:14px!important;color:var(--muted);margin-top:24px}
 .hero-actions{gap:14px;flex-wrap:wrap}.button.primary{background:var(--ink);color:white;border-color:var(--ink)}
 .button.primary:hover{background:var(--blue);color:var(--ink);border-color:var(--ink)}
-.button{min-height:48px}.eyebrow{color:var(--ink);letter-spacing:2px;font-size:11px;font-weight:700}
+.button{min-height:48px}.eyebrow{color:var(--ink);letter-spacing:2px;font-size:11px;font-weight:800}
 .directory-section{padding:36px 0 64px;scroll-margin-top:20px}
 .section-heading{position:sticky;top:0;z-index:5;background:var(--paper);padding:16px 0;gap:20px}
 .section-heading h2{font-size:26px}.region-switch{background:var(--soft);border:1px solid var(--line);padding:5px;flex-shrink:0}
@@ -75,3 +79,5 @@ a{color:inherit}button,a,input,select,summary{touch-action:manipulation}
 .result-card .card-description{font-size:15px;color:var(--ink)}
 .directory-section{border-top:0;padding-top:0}
 @media(min-width:801px){.marketplace-hero{padding-bottom:16px}.section-heading{padding-top:12px;padding-bottom:12px}.category-tabs{margin-top:8px}}
+@media(max-width:800px){.wordmark.wordmark-heart .wordmark-line{font-size:16px}.wordmark-heart small{font-size:8px;letter-spacing:1px}}
+@media(max-width:420px){.wordmark.wordmark-heart .wordmark-line{font-size:14px}}
