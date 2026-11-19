@@ -1,0 +1,32 @@
+[
+  {
+    "file": "launch-kit/dashboard/app.js",
+    "sha256": "6531f6600b646ed1f99998b99c2e0c659c821f351af103ee99b30eaad5b21ca8",
+    "bytes": 20636
+  },
+  {
+    "file": "launch-kit/dashboard/briefing.js",
+    "sha256": "1ea37179a560fd5672c80f95ad21ccb1c431e67fd7d2f4ff89f888971d2c74af",
+    "bytes": 11630
+  },
+  {
+    "file": "launch-kit/dashboard/core.js",
+    "sha256": "bbade3cc4e8d3538dee3e117e8c983294509d689fd1be55221a7721a8549ddfd",
+    "bytes": 8514
+  },
+  {
+    "file": "launch-kit/dashboard/index.html",
+    "sha256": "cc0195a1f038c599fdda324c4ed10b36cdcddf9668cda4c188414a921e055a64",
+    "bytes": 2067
+  },
+  {
+    "file": "launch-kit/dashboard/seed.js",
+    "sha256": "5b68834c64d7e4d065e12779a9a696d1810856640d7c48485478eaf39cce29ee",
+    "bytes": 13470
+  },
+  {
+    "file": "launch-kit/dashboard/styles.css",
+    "sha256": "e1bb3e455595fc73c017a6ebc3719b35e073cc57b9b15430ed7d46697d4cea3d",
+    "bytes": 5019
+  }
+]

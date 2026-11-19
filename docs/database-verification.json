@@ -1,0 +1,72 @@
+{
+  "project_id": "fgmduywfdlvomgbnibzk",
+  "project_name": "come-home-kc-development",
+  "region": "us-east-2",
+  "schema_applied": true,
+  "migration_versions": [
+    "20261117211249",
+    "20261117211330",
+    "20261117211645",
+    "20261117211750"
+  ],
+  "transactional_rls_tests": {
+    "result": "passed",
+    "checks": [
+      "anonymous candidate privacy",
+      "unpublished organization privacy",
+      "expired jobs hidden",
+      "candidate ownership",
+      "admin self-promotion blocked",
+      "cross-organization insert blocked",
+      "employer cannot read candidates",
+      "employer listing edit returns to review",
+      "consent history",
+      "intake trusted email",
+      "administrator role access",
+      "malformed import rejected",
+      "unknown onsite work geography blocked",
+      "unknown remote eligibility blocked",
+      "verified job location supports activation",
+      "location change removes active publication"
+    ],
+    "synthetic_data_rolled_back": true
+  },
+  "migration": {
+    "batch_id": "408e657a-b7bc-4d0b-815b-dd81d6cb6636",
+    "original_records": 26,
+    "employer_ecosystem_records": 21,
+    "organizations_created": 21,
+    "private_conversations_created": 21,
+    "tasks_created": 5,
+    "failed_imports": 0,
+    "duplicates": 0,
+    "missing_information_records": 21,
+    "publication_or_geography_review_needed": 21,
+    "source_records_preserved": 26,
+    "repeat_import_organization_count": 21,
+    "public_directory_status": "research; name only; geography unverified; private contacts and provenance retained separately"
+  },
+  "security_advisors": {
+    "warnings": 1,
+    "errors": 0,
+    "info": "private.rate_limits RLS has no policy; intentional deny-by-default server counter",
+    "warning": "Leaked password protection disabled; enable before production if plan supports it.",
+    "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+  },
+  "real_auth_rest_tests": "13 passed; see live-database-tests.json",
+  "production_ready": false,
+  "verified_resources": [
+    {
+      "title": "KANSASWORKS",
+      "state": "KS",
+      "source": "https://www.kansasworks.com/"
+    },
+    {
+      "title": "Missouri Job Centers",
+      "state": "MO",
+      "source": "https://jobs.mo.gov/jobseeker/missouri-job-centers"
+    }
+  ],
+  "public_tables": 25,
+  "tables_with_rls": 25
+}

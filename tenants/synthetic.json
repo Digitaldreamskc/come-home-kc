@@ -1,0 +1,9 @@
+{
+  "id":"b2000000-0000-4000-8000-000000000002","key":"synthetic","name":"Synthetic Lakes Network","product":"Lakes Connections — Test Only",
+  "headline":"Explore your next chapter.","description":"Synthetic tenant for configuration and isolation tests. Not a real organization or opportunity directory.",
+  "communityName":"Synthetic community","communityUrl":"https://example.test/community","logo":null,
+  "geography":[{"key":"all","label":"All Lakes"},{"key":"MN","label":"Minnesota"},{"key":"WI","label":"Wisconsin"}],
+  "tokens":{"blue":"#387F70","gold":"#E5C77E","ink":"#193B32","paper":"#FFFFFF","soft":"#F4F8F6","muted":"#52645C","headingFont":"Georgia, serif","bodyFont":"Arial, sans-serif","radius":6,"maxWidth":1280},
+  "modules":{"talent":true,"resources":true,"employers":true,"ai":false,"connectors":false},
+  "freeCoreAccess":true,"humanReviewedIntroductions":true,"synthetic":true
+}

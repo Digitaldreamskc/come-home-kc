@@ -1,0 +1,38 @@
+{
+  "mode": "--dry-run",
+  "source_sha256": "c7d23d63b4ef36e24c85dcd57761f4f2b7bc8924763bed9594aa45c49f979f4f",
+  "counts": {
+    "employers": 21,
+    "candidates": 0,
+    "demands": 0,
+    "matches": 0,
+    "outcomes": 0,
+    "tasks": 5
+  },
+  "original_records": 26,
+  "duplicates": [],
+  "requires_review": [],
+  "missing_information": [
+    "employers:emp-001: verified hiring contact/location",
+    "employers:emp-002: verified hiring contact/location",
+    "employers:emp-003: verified hiring contact/location",
+    "employers:emp-004: verified hiring contact/location",
+    "employers:emp-005: verified hiring contact/location",
+    "employers:emp-006: verified hiring contact/location",
+    "employers:emp-007: verified hiring contact/location",
+    "employers:emp-008: verified hiring contact/location",
+    "employers:emp-009: verified hiring contact/location",
+    "employers:emp-010: verified hiring contact/location",
+    "employers:emp-011: verified hiring contact/location",
+    "employers:emp-012: verified hiring contact/location",
+    "employers:emp-013: verified hiring contact/location",
+    "employers:emp-014: verified hiring contact/location",
+    "employers:emp-015: verified hiring contact/location",
+    "employers:eco-1: verified hiring contact/location",
+    "employers:eco-2: verified hiring contact/location",
+    "employers:eco-3: verified hiring contact/location",
+    "employers:eco-4: verified hiring contact/location",
+    "employers:eco-5: verified hiring contact/location",
+    "employers:eco-6: verified hiring contact/location"
+  ]
+}

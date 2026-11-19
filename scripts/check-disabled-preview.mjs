@@ -1,0 +1,4 @@
+import {spawn} from 'node:child_process';
+import assert from 'node:assert/strict';
+const child=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port','3103'],{stdio:'ignore',windowsHide:true,env:{...process.env,APP_MODE:'kcnow',ENABLE_CIVIC_DEMO:'0'}});
+(async()=>{try{let ready=false;for(let i=0;i<50;i++){try{await fetch('http://127.0.0.1:3103/civic');ready=true;break;}catch{await new Promise(r=>setTimeout(r,200));}}assert(ready,'Temporary local server did not start');for(const path of ['/civic','/api/civic/program','/api/civic/connections'])assert.equal((await fetch('http://127.0.0.1:3103'+path)).status,404,path);console.log('PASS: disabled civic UI and data routes return 404');}finally{child.kill();}})().catch(e=>{console.error(e.message);process.exitCode=1;});

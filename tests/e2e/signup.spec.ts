@@ -1,0 +1,49 @@
+import {test,expect} from '@playwright/test';
+import path from 'node:path';
+for(const intent of ['talent','employer'])for(const width of [1440,1024,768,390,375])test(`${intent} signup fits ${width}px with explicit privacy`,async({page})=>{
+ await page.setViewportSize({width,height:1000});await page.goto('/signup?intent='+intent);await page.evaluate(()=>document.fonts.ready);
+ await expect(page.getByRole('heading',{name:intent==='talent'?'Create a talent account':'Create an employer account',exact:true})).toBeVisible();
+ await expect(page.getByText('Your choices stay separate.',{exact:true})).toBeVisible();
+ await expect(page.getByRole('checkbox')).toHaveCount(0);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:path.resolve(`outputs/${intent}-signup-${width}.png`),fullPage:true});
+});
+test('signup validates short passwords and preserves employer intent without granting access',async({page})=>{
+ let requests=0;let payload:Record<string,unknown>={};let redirect='';
+ await page.route('**/auth/v1/signup*',async route=>{requests++;payload=route.request().postDataJSON();redirect=new URL(route.request().url()).searchParams.get('redirect_to')||'';await route.fulfill({status:200,json:{user:{id:'95000000-0000-4000-8000-000000000001',email:'signup@example.test',identities:[]},session:null}});});
+ await page.goto('/signup?intent=employer');await page.getByLabel('Email',{exact:true}).fill('signup@example.test');await page.getByLabel('Password',{exact:true}).fill('short');await page.getByRole('button',{name:'Create account',exact:true}).click();await expect(page.locator('.field-error')).toContainText('Use at least 12 characters');expect(requests).toBe(0);
+ await page.getByLabel('Password',{exact:true}).fill('Synthetic-passphrase-123');await page.getByRole('button',{name:'Create account',exact:true}).click();await expect(page.getByRole('heading',{name:'Confirm your email',exact:true})).toBeVisible();expect(requests).toBe(1);expect(payload.data).toEqual({onboarding_intent:'employer'});expect(new URL(redirect).searchParams.get('next')).toBe('/portal?view=employer');await expect(page).toHaveURL(/signup/);
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:path.resolve('outputs/signup-confirmation-'+width+'.png'),fullPage:true});}
+});
+test('signup service errors preserve entered fields and allow recovery',async({page})=>{
+ await page.route('**/auth/v1/signup*',route=>route.fulfill({status:429,json:{msg:'Please wait before trying again.'}}));await page.goto('/signup?intent=talent');await page.getByLabel('Email',{exact:true}).fill('signup@example.test');await page.getByLabel('Password',{exact:true}).fill('Synthetic-passphrase-123');await page.getByLabel('Password',{exact:true}).fill('Synthetic-passphrase-123');await page.getByRole('button',{name:'Create account',exact:true}).click();await expect(page.getByRole('status')).toContainText('Please wait');await expect(page.getByLabel('Email',{exact:true})).toHaveValue('signup@example.test');await expect(page.getByRole('button',{name:'Create account',exact:true})).toBeEnabled();
+});
+
+test('confirmation resend and wrong-address controls preserve destination',async({page})=>{
+ await page.clock.install();let resends=0;const id='95000000-0000-4000-8000-000000000001';
+ await page.route('**/auth/v1/signup*',r=>r.fulfill({json:{user:{id,email:'synthetic@example.test',identities:[]},session:null}}));
+ await page.route('**/auth/v1/resend*',r=>{resends++;expect(r.request().postDataJSON().email).toBe('synthetic@example.test');return r.fulfill({json:{}});});
+ await page.goto('/signup?intent=talent&next='+encodeURIComponent('/portal?view=profile&job='+id+'#request-introduction'));
+ await page.getByLabel('Email',{exact:true}).fill('synthetic@example.test');await page.getByLabel('Password',{exact:true}).fill('Synthetic-passphrase-123');await page.getByRole('button',{name:'Create account',exact:true}).click();await expect(page.getByText('synthetic@example.test',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:/Resend available/})).toBeDisabled();await expect(page.getByRole('link',{name:'Resend confirmation email',exact:true})).toHaveCount(0);await page.clock.fastForward(61000);await page.getByRole('button',{name:'Resend confirmation',exact:true}).click();expect(resends).toBe(1);await page.getByRole('button',{name:'Wrong address?',exact:true}).click();await expect(page.getByLabel('Email',{exact:true})).toHaveValue('synthetic@example.test');await expect(page.getByLabel('Password',{exact:true})).toHaveValue('');await expect(page.getByRole('link',{name:'Sign in',exact:true})).toHaveAttribute('href',/next=/);
+});
+
+test('capture short-password, existing-account, and invalid-link recovery states',async({page})=>{
+ async function capture(name:string){for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:path.resolve(`outputs/${name}-${width}.png`),fullPage:true});}}
+ await page.route('**/auth/v1/signup*',r=>r.fulfill({status:422,json:{msg:'This email is already registered. Sign in or reset your password.'}}));
+ await page.goto('/signup?intent=talent');await page.getByLabel('Email',{exact:true}).fill('synthetic@example.test');await page.getByLabel('Password',{exact:true}).fill('short');await page.getByRole('button',{name:'Create account',exact:true}).click();await expect(page.locator('.field-error')).toContainText('at least 12');await expect(page.getByLabel('Password',{exact:true})).toBeFocused();await expect(page.getByLabel('Password',{exact:true})).toHaveAttribute('aria-invalid','true');await expect(page.getByLabel('Password',{exact:true})).toHaveAttribute('aria-describedby',/-error$/);await capture('signup-short-password');
+ await page.getByLabel('Password',{exact:true}).fill('Synthetic-passphrase-123');await page.getByRole('button',{name:'Create account',exact:true}).click();await expect(page.getByRole('status')).toContainText('Check your email to continue');await capture('signup-existing-account');
+ await page.goto('/auth/callback?code=invalid&next=/portal');await expect(page.getByRole('status')).toContainText('missing, expired or already used');await capture('signup-invalid-link');
+});
+
+test('expired confirmation links recover without registering again or revealing account existence',async({page})=>{
+ let requests=0;let signupCalls=0;let redirect='';await page.route('**/auth/v1/signup*',async r=>{signupCalls++;await r.abort();});await page.route('**/auth/v1/resend*',async r=>{requests++;redirect=r.request().postDataJSON().email_redirect_to||new URL(r.request().url()).searchParams.get('redirect_to')||'';expect(r.request().postDataJSON().email).toBe('synthetic@example.test');await r.fulfill({json:{}});});
+ const job='95000000-0000-4000-8000-000000000001';await page.goto('/auth/callback?next='+encodeURIComponent('/portal?job='+job));await page.getByRole('link',{name:'Resend confirmation email',exact:true}).click();await expect(page.getByRole('heading',{name:'Resend confirmation email',exact:true})).toBeVisible();await expect(page.getByLabel('Email',{exact:true})).toBeEmpty();await page.getByRole('button',{name:'Send confirmation link',exact:true}).click();expect(requests).toBe(0);await page.getByLabel('Email',{exact:true}).fill('synthetic@example.test');
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:path.resolve(`outputs/confirmation-recovery-${width}.png`),fullPage:true});}
+ await page.getByRole('button',{name:'Send confirmation link',exact:true}).click();await expect(page.getByRole('status')).toContainText('If this address needs confirmation');await expect(page.getByRole('status')).toBeFocused();expect(requests).toBe(1);expect(signupCalls).toBe(0);expect(redirect).toContain(encodeURIComponent(job));await expect(page.getByRole('link',{name:'Reset your password',exact:true})).toHaveAttribute('href','/forgot-password');
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:path.resolve(`outputs/confirmation-recovery-sent-${width}.png`),fullPage:true});}
+});
+
+test('new and already-registered signup responses present the same continuation',async({page})=>{
+ const messages:string[]=[];
+ for(const exists of [false,true]){await page.route('**/auth/v1/signup*',r=>r.fulfill(exists?{status:422,json:{code:'user_already_exists',msg:'User already registered'}}:{json:{user:{id:'95000000-0000-4000-8000-000000000001',identities:[]},session:null}}));await page.goto('/signup?intent=talent');await page.getByLabel('Email',{exact:true}).fill('synthetic@example.test');await page.getByLabel('Password',{exact:true}).fill('Synthetic-passphrase-123');await page.getByRole('button',{name:'Create account',exact:true}).click();await expect(page.getByRole('heading',{name:'Confirm your email',exact:true})).toBeVisible();messages.push(await page.getByRole('status').innerText());await expect(page.getByText('User already registered',{exact:true})).toHaveCount(0);await page.unroute('**/auth/v1/signup*');}expect(messages[0]).toBe(messages[1]);
+});

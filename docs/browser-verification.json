@@ -1,0 +1,20 @@
+{
+  "environment": "isolated development; local production server",
+  "stats": {
+    "startTime": "2026-11-18T02:35:47.379Z",
+    "duration": 16973.006999999998,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "scope": [
+    "public combined filters",
+    "mobile layout",
+    "private route protection",
+    "candidate profile persistence and consent",
+    "admin access",
+    "employer job create/edit/close",
+    "cross-company write rejection"
+  ]
+}
