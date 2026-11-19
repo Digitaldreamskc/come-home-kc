@@ -6,9 +6,11 @@ do $$declare r record;v text;begin
  execute format('select md5(coalesce(string_agg(to_jsonb(x)::text,E''\n'' order by to_jsonb(x)::text),'''')) from %I.%I x where tenant_id=$1',r.table_schema,r.table_name) into v using 'b2000000-0000-4000-8000-000000000001'::uuid;
  insert into preserved values(r.table_schema,r.table_name,v);
  end loop;end $$;
+-- Operator-only decommission simulation: trigger change and deletes roll back together.
+alter table private.program_events disable trigger immutable_program_history;
 select set_config('request.jwt.claim.sub','',true),set_config('request.jwt.claims','{}',true);
 do $$declare tab text;t uuid:='c3000000-0000-4000-8000-000000000001';begin
- foreach tab in array array['path_event_notes','path_events','path_consents','path_attempts','path_requests','path_confirmations','path_relationships','path_people','program_records','program_profiles','program_catalog','program_modules','workflow_reviewers','path_deletion_requests','retention_holds','personal_data_inventory','relationship_modules'] loop
+ foreach tab in array array['program_events','path_event_notes','path_events','path_consents','path_attempts','path_requests','path_confirmations','path_relationships','path_people','program_records','program_profiles','program_catalog','program_modules','workflow_reviewers','path_deletion_requests','retention_holds','personal_data_inventory','relationship_modules'] loop
  execute format('delete from private.%I where tenant_id=$1',tab) using t;
  end loop;
  delete from public.organization_members where tenant_id=t;

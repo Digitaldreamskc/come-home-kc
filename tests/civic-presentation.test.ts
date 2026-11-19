@@ -16,3 +16,13 @@ test('only exact known fixture annotations change for display',()=>{
  assert.equal(demonstrationNote('Fictional participation: attended the Riverbend board orientation as an observer. Self-reported; not a board appointment.'),'Attended the Riverbend board orientation as an observer. Self-reported; not a board appointment.');
  assert.equal(demonstrationNote('Synthetic interest: my own research'),'Synthetic interest: my own research');
 });
+
+
+test('review and organization activities cannot advance personal civic journey',()=>{
+ const data={profile:null,records:[],connections:[],review_records:[{kind:'learning'},{kind:'interest'},{kind:'outcome'}],organization_records:[{kind:'interest'}]} as unknown as ProgramWorkspace;
+ assert.deepEqual(journeyProgress(data).map(s=>s.complete),[false,false,false,false,false,false]);
+});
+test('withdrawn interest no longer counts as an active match',()=>{
+ const data={profile:null,records:[{kind:'interest',state:'withdrawn'}]} as unknown as ProgramWorkspace;
+ assert.equal(journeyProgress(data)[3].complete,false);
+});

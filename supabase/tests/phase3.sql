@@ -44,9 +44,10 @@ select pg_temp.actor(4);select pg_temp.denied($q$select public.path_erase(curren
 reset role;
 -- Historical/operator-inserted nested JSON still must be covered by erasure.
 update private.program_profiles set payload=payload||'{"historical":{"nested":"SUBJECT_SENTINEL"}}'::jsonb where tenant_id='d1000000-0000-4000-8000-000000000001';
-do $$declare tab text;begin foreach tab in array array['program_profiles','program_catalog','program_records'] loop execute format('insert into private.personal_data_inventory(tenant_id,table_name,row_key,subjects) select tenant_id,$1,id::text,array[$2::uuid] from private.%I where tenant_id=$3::uuid',tab) using tab,'d3000000-0000-4000-8000-000000000001','d1000000-0000-4000-8000-000000000001';end loop;end $$;
+do $$declare tab text;begin foreach tab in array array['program_profiles','program_catalog','program_records','program_events'] loop execute format('insert into private.personal_data_inventory(tenant_id,table_name,row_key,subjects) select tenant_id,$1,id::text,array[$2::uuid] from private.%I where tenant_id=$3::uuid',tab) using tab,'d3000000-0000-4000-8000-000000000001','d1000000-0000-4000-8000-000000000001';end loop;end $$;
 set local role authenticated;select pg_temp.actor(4);select public.path_erase(current_setting('test.delete3')::uuid);
 reset role;
+select pg_temp.ok(not exists(select 1 from private.program_events where tenant_id='d1000000-0000-4000-8000-000000000001'),'Deletion removes historical civic notes, decisions and consent payloads');
 select pg_temp.ok(not exists(select 1 from private.program_profiles where tenant_id='d1000000-0000-4000-8000-000000000001'),'Deletion covers own and other-person profile JSON mentioning subject');
 select pg_temp.ok(not exists(select 1 from private.program_records where tenant_id='d1000000-0000-4000-8000-000000000001'),'Deletion removes learning interest and outcome notes');
 select pg_temp.ok(not exists(select 1 from private.program_catalog where tenant_id='d1000000-0000-4000-8000-000000000001' and to_jsonb(program_catalog)::text like '%SUBJECT_SENTINEL%'),'Deletion minimizes catalog free text');

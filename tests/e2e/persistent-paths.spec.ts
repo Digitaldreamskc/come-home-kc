@@ -74,6 +74,8 @@ test('persistent history attributes consent and stacks mobile timeline labels ab
  const emailRows=consents.locator('.path-consent-record').filter({hasText:'Share my email only'});
  await expect(emailRows.filter({hasText:'Alex Morgan'})).toContainText('Not permitted');
  await expect(emailRows.filter({hasText:'Riley Brooks'})).toContainText('Agreed');
+ if(!await closed.isVisible())await page.locator('.path-earlier > summary').click();
+ await expect(closed).toBeVisible();
  await expect(closed.locator('.persistent-timeline')).toContainText('Request submitted');
  await expect(closed.locator('.persistent-timeline')).toContainText('Closed, changes requested');
  await expect(closed.locator('.persistent-timeline')).not.toContainText('Not started');
