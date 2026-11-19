@@ -4,7 +4,8 @@ begin;
 select set_config('request.headers','{"x-tenant-id":"b2000000-0000-4000-8000-000000000001"}',true);
 insert into public.tenants(id,slug,name) values
  ('a7e00000-0000-4000-8000-000000000002','synthetic-other','Synthetic other'),
- ('a7e00000-0000-4000-8000-000000000003','synthetic-third','Synthetic third');
+ ('a7e00000-0000-4000-8000-000000000003','synthetic-third','Synthetic third'),
+ ('a7e00000-0000-4000-8000-000000000004','synthetic-erasure','Synthetic erasure');
 insert into public.tenant_regions values
  ('a7e00000-0000-4000-8000-000000000002','MO','Missouri'),
  ('a7e00000-0000-4000-8000-000000000002','KS','Kansas'),
@@ -20,11 +21,14 @@ insert into private.program_modules(tenant_id,enabled) values
 insert into auth.users(id,email,email_confirmed_at) values
  ('a7e10000-0000-4000-8000-000000000001','member-a@example.test',now()),
  ('a7e10000-0000-4000-8000-000000000002','fresh-member@example.test',now()),
- ('a7e10000-0000-4000-8000-000000000003','dual-member@example.test',now());
-insert into auth.sessions(id,user_id,created_at,updated_at) values
- ('a7e60000-0000-4000-8000-000000000001','a7e10000-0000-4000-8000-000000000001',now(),now()),
- ('a7e60000-0000-4000-8000-000000000002','a7e10000-0000-4000-8000-000000000002',now(),now()),
- ('a7e60000-0000-4000-8000-000000000003','a7e10000-0000-4000-8000-000000000003',now(),now());
+ ('a7e10000-0000-4000-8000-000000000003','dual-member@example.test',now()),
+ ('a7e10000-0000-4000-8000-000000000004','conflict-member@example.test',now()),
+ ('a7e10000-0000-4000-8000-000000000005','sole-member@example.test',now()),
+ ('a7e10000-0000-4000-8000-000000000006','erasure-subject@example.test',now()),
+ ('a7e10000-0000-4000-8000-000000000007','erasure-reviewer@example.test',now());
+insert into auth.sessions(id,user_id,created_at,updated_at)
+select replace(id::text,'a7e10000-','a7e60000-')::uuid, id, now(), now()
+from auth.users where id::text like 'a7e10000-%';
 insert into public.organizations(id,name,status,verification_status,verified_at) values
  ('a7e20000-0000-4000-8000-000000000001','Synthetic home employer','published','verified',now());
 insert into public.organizations(tenant_id,id,name,status,verification_status,verified_at) values
@@ -49,6 +53,17 @@ insert into public.job_locations(tenant_id,job_id,city,state,verified_at) values
 update public.job_postings set status='active' where id in ('a7e30000-0000-4000-8000-000000000001','a7e30000-0000-4000-8000-000000000002');
 insert into private.program_catalog(tenant_id,id,kind,title,description,status) values
  ('a7e00000-0000-4000-8000-000000000002','a7e50000-0000-4000-8000-000000000002','opportunity','Synthetic seat','Synthetic activity','approved');
+insert into public.candidate_profiles(tenant_id,user_id,name,email) values
+ ('b2000000-0000-4000-8000-000000000001','a7e10000-0000-4000-8000-000000000004','Conflict home','conflict-member@example.test'),
+ ('a7e00000-0000-4000-8000-000000000002','a7e10000-0000-4000-8000-000000000004','Conflict other','conflict-member@example.test'),
+ ('b2000000-0000-4000-8000-000000000001','a7e10000-0000-4000-8000-000000000005','Sole person','sole-member@example.test');
+insert into public.tenant_members(tenant_id,user_id) values
+ ('a7e00000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000006'),
+ ('a7e00000-0000-4000-8000-000000000002','a7e10000-0000-4000-8000-000000000006');
+insert into private.workflow_reviewers(tenant_id,user_id,workflow) values
+ ('a7e00000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000007','privacy');
+insert into private.path_deletion_requests(tenant_id,id,subject_id) values
+ ('a7e00000-0000-4000-8000-000000000004','a7e70000-0000-4000-8000-000000000001','a7e10000-0000-4000-8000-000000000006');
 
 do $$ begin
  if not exists(select 1 from public.tenant_members where tenant_id='b2000000-0000-4000-8000-000000000001' and user_id='a7e10000-0000-4000-8000-000000000001') then raise exception 'Home membership was not recorded'; end if;
@@ -61,11 +76,7 @@ begin
  perform set_config('request.headers', jsonb_build_object('x-tenant-id', tenant)::text, true);
  perform set_config('request.jwt.claim.sub', actor::text, true);
  perform set_config('request.jwt.claim.role', 'authenticated', true);
- perform set_config('request.jwt.claims', jsonb_build_object('sub', actor, 'role', 'authenticated', 'session_id',
-  case actor
-   when 'a7e10000-0000-4000-8000-000000000001'::uuid then 'a7e60000-0000-4000-8000-000000000001'
-   when 'a7e10000-0000-4000-8000-000000000002'::uuid then 'a7e60000-0000-4000-8000-000000000002'
-   else 'a7e60000-0000-4000-8000-000000000003' end)::text, true);
+ perform set_config('request.jwt.claims', jsonb_build_object('sub', actor, 'role', 'authenticated', 'session_id', replace(actor::text,'a7e10000-','a7e60000-'))::text, true);
 end $$;
 grant execute on function pg_temp.act(uuid, uuid) to authenticated;
 
@@ -113,14 +124,26 @@ end $$;
 
 select pg_temp.act('a7e10000-0000-4000-8000-000000000002','b2000000-0000-4000-8000-000000000001');
 do $$ begin
- if private.current_tenant()<>'b2000000-0000-4000-8000-000000000001' then raise exception 'First enrollment did not follow the deployment tenant'; end if;
+ if private.current_tenant() is not null then raise exception 'Fresh account already has tenant authority'; end if;
+ begin insert into public.introduction_requests(tenant_id,candidate_user_id,job_id,message,status) values('b2000000-0000-4000-8000-000000000001',auth.uid(),'a7e30000-0000-4000-8000-000000000001','First action home','requested'); raise exception 'First introduction enrolled the home tenant'; exception when insufficient_privilege or foreign_key_violation or not_null_violation or raise_exception then if sqlerrm='First introduction enrolled the home tenant' then raise; end if; end;
+end $$;
+select pg_temp.act('a7e10000-0000-4000-8000-000000000002','a7e00000-0000-4000-8000-000000000002');
+do $$ begin
+ if private.current_tenant() is not null then raise exception 'Introduction request bound a second tenant'; end if;
+ begin insert into public.introduction_requests(tenant_id,candidate_user_id,job_id,message,status) values('a7e00000-0000-4000-8000-000000000002',auth.uid(),'a7e30000-0000-4000-8000-000000000002','First action other','requested'); raise exception 'First introduction enrolled the other tenant'; exception when insufficient_privilege or foreign_key_violation or not_null_violation or raise_exception then if sqlerrm='First introduction enrolled the other tenant' then raise; end if; end;
+end $$;
+select pg_temp.act('a7e10000-0000-4000-8000-000000000002','b2000000-0000-4000-8000-000000000001');
+do $$ begin
+ if private.current_tenant() is not null then raise exception 'Introduction requests created a membership'; end if;
+ if public.enroll_tenant()<>'b2000000-0000-4000-8000-000000000001' then raise exception 'Profile enrollment did not bind the deployment tenant'; end if;
  insert into public.candidate_profiles(user_id,name,email) values(auth.uid(),'First enrollment','fresh-member@example.test');
+ insert into public.introduction_requests(candidate_user_id,job_id,message,status) values(auth.uid(),'a7e30000-0000-4000-8000-000000000001','Enrolled request','requested');
 end $$;
 select pg_temp.act('a7e10000-0000-4000-8000-000000000002','a7e00000-0000-4000-8000-000000000002');
 do $$ begin
  if private.current_tenant() is not null then raise exception 'Enrolled account can still follow a forged header'; end if;
- begin insert into public.candidate_profiles(tenant_id,user_id,name,email) values('a7e00000-0000-4000-8000-000000000002',auth.uid(),'Second tenant','fresh-member@example.test'); raise exception 'Second enrollment accepted'; exception when insufficient_privilege or not_null_violation or raise_exception then if sqlerrm='Second enrollment accepted' then raise; end if; end;
- if exists(select 1 from public.candidate_profiles where tenant_id='a7e00000-0000-4000-8000-000000000002' and user_id=auth.uid()) then raise exception 'Second enrollment row exists'; end if;
+ begin perform public.enroll_tenant(); raise exception 'Second enrollment accepted'; exception when insufficient_privilege or raise_exception then if sqlerrm='Second enrollment accepted' then raise; end if; end;
+ begin insert into public.introduction_requests(tenant_id,candidate_user_id,job_id,message,status) values('a7e00000-0000-4000-8000-000000000002',auth.uid(),'a7e30000-0000-4000-8000-000000000002','After enroll other','requested'); raise exception 'Introduction in a second tenant accepted'; exception when insufficient_privilege or foreign_key_violation or not_null_violation or raise_exception then if sqlerrm='Introduction in a second tenant accepted' then raise; end if; end;
 end $$;
 
 select pg_temp.act('a7e10000-0000-4000-8000-000000000003','a7e00000-0000-4000-8000-000000000002');
@@ -133,6 +156,20 @@ select pg_temp.act('a7e10000-0000-4000-8000-000000000003','a7e00000-0000-4000-80
 do $$ begin
  if private.current_tenant() is not null then raise exception 'Ungranted third tenant was selected'; end if;
  begin insert into public.candidate_profiles(tenant_id,user_id,name,email) values('a7e00000-0000-4000-8000-000000000003',auth.uid(),'Third tenant','dual-member@example.test'); raise exception 'Third tenant write accepted'; exception when insufficient_privilege or not_null_violation or raise_exception then if sqlerrm='Third tenant write accepted' then raise; end if; end;
+end $$;
+select pg_temp.act('a7e10000-0000-4000-8000-000000000007','a7e00000-0000-4000-8000-000000000004');
+do $$ begin
+ if public.path_erase('a7e70000-0000-4000-8000-000000000001')->>'status'<>'completed' then raise exception 'Workspace erasure did not complete'; end if;
+end $$;
+select pg_temp.act('a7e10000-0000-4000-8000-000000000006','a7e00000-0000-4000-8000-000000000004');
+do $$ begin
+ if private.current_tenant() is not null then raise exception 'Erased tenant is still authorized'; end if;
+ begin insert into public.candidate_profiles(tenant_id,user_id,name,email) values('a7e00000-0000-4000-8000-000000000004',auth.uid(),'Erased rewrite','erasure-subject@example.test'); raise exception 'Erased tenant accepted a new profile'; exception when insufficient_privilege or not_null_violation or raise_exception then if sqlerrm='Erased tenant accepted a new profile' then raise; end if; end;
+end $$;
+select pg_temp.act('a7e10000-0000-4000-8000-000000000006','a7e00000-0000-4000-8000-000000000002');
+do $$ begin
+ if private.current_tenant()<>'a7e00000-0000-4000-8000-000000000002' then raise exception 'Erasure removed a different tenant'; end if;
+ insert into public.candidate_profiles(user_id,name,email) values(auth.uid(),'Other tenant survived','erasure-subject@example.test');
 end $$;
 
 reset role;
@@ -152,8 +189,21 @@ do $$ begin
  if (select title from public.job_postings where id='a7e30000-0000-4000-8000-000000000002')<>'Other opening' then raise exception 'Other tenant opportunity was modified'; end if;
  if exists(select 1 from public.candidate_profiles where tenant_id='a7e00000-0000-4000-8000-000000000003' and user_id='a7e10000-0000-4000-8000-000000000003') then raise exception 'Ungranted third tenant row exists'; end if;
  if exists(select 1 from public.candidate_profiles where tenant_id='a7e00000-0000-4000-8000-000000000002' and user_id='a7e10000-0000-4000-8000-000000000002') then raise exception 'Second enrollment row exists'; end if;
- if not exists(select 1 from public.tenant_members where tenant_id='b2000000-0000-4000-8000-000000000001' and user_id='a7e10000-0000-4000-8000-000000000002') then raise exception 'First write did not record membership'; end if;
- if exists(select 1 from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000002' and tenant_id<>'b2000000-0000-4000-8000-000000000001') then raise exception 'First enrollment recorded an extra tenant'; end if;
+ if exists(select 1 from public.introduction_requests where candidate_user_id='a7e10000-0000-4000-8000-000000000002' and tenant_id<>'b2000000-0000-4000-8000-000000000001') then raise exception 'Introduction was stored outside the enrolled tenant'; end if;
+ if not exists(select 1 from public.introduction_requests where tenant_id='b2000000-0000-4000-8000-000000000001' and candidate_user_id='a7e10000-0000-4000-8000-000000000002' and message='Enrolled request') then raise exception 'Enrolled introduction was not stored'; end if;
+ if not exists(select 1 from public.tenant_members where tenant_id='b2000000-0000-4000-8000-000000000001' and user_id='a7e10000-0000-4000-8000-000000000002') then raise exception 'Enrollment did not record membership'; end if;
+ if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000002')<>1 then raise exception 'Enrollment recorded more than one tenant'; end if;
+ if exists(select 1 from public.tenant_members where tenant_id='a7e00000-0000-4000-8000-000000000004' and user_id='a7e10000-0000-4000-8000-000000000006') then raise exception 'Erasure left the tenant membership'; end if;
+ if not exists(select 1 from public.tenant_members where tenant_id='a7e00000-0000-4000-8000-000000000002' and user_id='a7e10000-0000-4000-8000-000000000006') then raise exception 'Erasure removed another tenant membership'; end if;
+ if not exists(select 1 from public.tenant_members where tenant_id='a7e00000-0000-4000-8000-000000000004' and user_id='a7e10000-0000-4000-8000-000000000007') then raise exception 'Erasure removed the reviewer membership'; end if;
+ delete from public.tenant_members where user_id in ('a7e10000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000005');
+ delete from private.tenant_membership_review where user_id in ('a7e10000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000005');
+ perform private.reconcile_tenant_memberships();
+ if exists(select 1 from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000004') then raise exception 'Conflicting self-service records were granted'; end if;
+ if (select count(*) from private.tenant_membership_review where user_id='a7e10000-0000-4000-8000-000000000004')<>2 then raise exception 'Conflicting tenants were not flagged for review'; end if;
+ if not exists(select 1 from public.tenant_members where tenant_id='b2000000-0000-4000-8000-000000000001' and user_id='a7e10000-0000-4000-8000-000000000005') then raise exception 'Single original workspace was not granted'; end if;
+ if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000005')<>1 then raise exception 'Single original workspace granted an extra tenant'; end if;
+ if exists(select 1 from private.tenant_membership_review where user_id='a7e10000-0000-4000-8000-000000000005') then raise exception 'Single original workspace was flagged'; end if;
 end $$;
 select 'PASS: member writes stay inside granted tenant memberships; forged headers and direct calls are rejected' as result;
 rollback;
