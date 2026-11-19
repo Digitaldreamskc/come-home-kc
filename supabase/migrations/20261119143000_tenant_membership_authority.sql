@@ -160,7 +160,9 @@ begin
   );
   if hinted is null then raise exception 'Tenant context required' using errcode = '42501'; end if;
   perform pg_advisory_xact_lock(hashtextextended('tenant-member:' || uid::text, 0));
-  if exists(select 1 from public.tenant_members m where m.user_id = uid and m.tenant_id = hinted) then return hinted; end if;
+  -- A supplied invitation can grant a new role to an existing member. Validate and
+  -- consume it below; only token-free membership checks are an idempotent no-op.
+  if token is null and exists(select 1 from public.tenant_members m where m.user_id = uid and m.tenant_id = hinted) then return hinted; end if;
   if token is not null then
     if length(token) < 16 or length(token) > 200 then raise exception 'Invitation not valid' using errcode = '42501'; end if;
     select i.id, i.role, i.display_name into invite, invite_role, invite_name from private.tenant_invitations i
