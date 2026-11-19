@@ -25,7 +25,10 @@ insert into auth.users(id,email,email_confirmed_at) values
  ('a7e10000-0000-4000-8000-000000000004','conflict-member@example.test',now()),
  ('a7e10000-0000-4000-8000-000000000005','sole-member@example.test',now()),
  ('a7e10000-0000-4000-8000-000000000006','erasure-subject@example.test',now()),
- ('a7e10000-0000-4000-8000-000000000007','erasure-reviewer@example.test',now());
+ ('a7e10000-0000-4000-8000-000000000007','erasure-reviewer@example.test',now()),
+ ('a7e10000-0000-4000-8000-000000000008','operator-member@example.test',now()),
+ ('a7e10000-0000-4000-8000-000000000009','invitee@example.test',now()),
+ ('a7e10000-0000-4000-8000-000000000010','open-member@example.test',now());
 insert into auth.sessions(id,user_id,created_at,updated_at)
 select replace(id::text,'a7e10000-','a7e60000-')::uuid, id, now(), now()
 from auth.users where id::text like 'a7e10000-%';
@@ -56,7 +59,16 @@ insert into private.program_catalog(tenant_id,id,kind,title,description,status) 
 insert into public.candidate_profiles(tenant_id,user_id,name,email) values
  ('b2000000-0000-4000-8000-000000000001','a7e10000-0000-4000-8000-000000000004','Conflict home','conflict-member@example.test'),
  ('a7e00000-0000-4000-8000-000000000002','a7e10000-0000-4000-8000-000000000004','Conflict other','conflict-member@example.test'),
- ('b2000000-0000-4000-8000-000000000001','a7e10000-0000-4000-8000-000000000005','Sole person','sole-member@example.test');
+ ('b2000000-0000-4000-8000-000000000001','a7e10000-0000-4000-8000-000000000005','Sole person','sole-member@example.test'),
+ ('a7e00000-0000-4000-8000-000000000002','a7e10000-0000-4000-8000-000000000008','Operator extra profile','operator-member@example.test');
+insert into public.user_roles(tenant_id,user_id,role) values('b2000000-0000-4000-8000-000000000001','a7e10000-0000-4000-8000-000000000008','admin');
+insert into private.tenant_enrollment_policy(tenant_id,open_enrollment) values
+ ('b2000000-0000-4000-8000-000000000001',true),
+ ('a7e00000-0000-4000-8000-000000000003',true);
+insert into private.tenant_invitations(tenant_id,email,token_hash,expires_at) values
+ ('a7e00000-0000-4000-8000-000000000002','invitee@example.test',md5('synthetic-valid-invite-token'),now()+interval '2 days'),
+ ('a7e00000-0000-4000-8000-000000000002','invitee@example.test',md5('synthetic-expired-invite-token'),now()-interval '1 day'),
+ ('b2000000-0000-4000-8000-000000000001','invitee@example.test',md5('synthetic-home-invite-token'),now()+interval '2 days');
 insert into public.tenant_members(tenant_id,user_id) values
  ('a7e00000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000006'),
  ('a7e00000-0000-4000-8000-000000000002','a7e10000-0000-4000-8000-000000000006');
@@ -135,7 +147,7 @@ end $$;
 select pg_temp.act('a7e10000-0000-4000-8000-000000000002','b2000000-0000-4000-8000-000000000001');
 do $$ begin
  if private.current_tenant() is not null then raise exception 'Introduction requests created a membership'; end if;
- if public.enroll_tenant()<>'b2000000-0000-4000-8000-000000000001' then raise exception 'Profile enrollment did not bind the deployment tenant'; end if;
+ if public.enroll_tenant()<>'b2000000-0000-4000-8000-000000000001' then raise exception 'Open enrollment did not bind the deployment tenant'; end if;
  insert into public.candidate_profiles(user_id,name,email) values(auth.uid(),'First enrollment','fresh-member@example.test');
  insert into public.introduction_requests(candidate_user_id,job_id,message,status) values(auth.uid(),'a7e30000-0000-4000-8000-000000000001','Enrolled request','requested');
 end $$;
@@ -144,6 +156,22 @@ do $$ begin
  if private.current_tenant() is not null then raise exception 'Enrolled account can still follow a forged header'; end if;
  begin perform public.enroll_tenant(); raise exception 'Second enrollment accepted'; exception when insufficient_privilege or raise_exception then if sqlerrm='Second enrollment accepted' then raise; end if; end;
  begin insert into public.introduction_requests(tenant_id,candidate_user_id,job_id,message,status) values('a7e00000-0000-4000-8000-000000000002',auth.uid(),'a7e30000-0000-4000-8000-000000000002','After enroll other','requested'); raise exception 'Introduction in a second tenant accepted'; exception when insufficient_privilege or foreign_key_violation or not_null_violation or raise_exception then if sqlerrm='Introduction in a second tenant accepted' then raise; end if; end;
+end $$;
+select pg_temp.act('a7e10000-0000-4000-8000-000000000002','a7e00000-0000-4000-8000-000000000003');
+do $$ begin
+ begin perform public.enroll_tenant(); raise exception 'Second open tenant accepted'; exception when insufficient_privilege or raise_exception then if sqlerrm='Second open tenant accepted' then raise; end if; end;
+end $$;
+select pg_temp.act('a7e10000-0000-4000-8000-000000000009','a7e00000-0000-4000-8000-000000000002');
+do $$ begin
+ begin perform public.enroll_tenant(); raise exception 'Closed tenant accepted uninvited enrollment'; exception when insufficient_privilege or raise_exception then if sqlerrm='Closed tenant accepted uninvited enrollment' then raise; end if; end;
+ begin perform public.enroll_tenant('b2000000-0000-4000-8000-000000000001'); raise exception 'Caller tenant id was accepted as enrollment'; exception when insufficient_privilege or raise_exception then if sqlerrm='Caller tenant id was accepted as enrollment' then raise; end if; end;
+ begin perform public.enroll_tenant('synthetic-home-invite-token'); raise exception 'Other-tenant invitation was accepted'; exception when insufficient_privilege or raise_exception then if sqlerrm='Other-tenant invitation was accepted' then raise; end if; end;
+ begin perform public.enroll_tenant('synthetic-expired-invite-token'); raise exception 'Expired invitation was accepted'; exception when insufficient_privilege or raise_exception then if sqlerrm='Expired invitation was accepted' then raise; end if; end;
+ if public.enroll_tenant('synthetic-valid-invite-token')<>'a7e00000-0000-4000-8000-000000000002' then raise exception 'Valid invitation was rejected'; end if;
+end $$;
+select pg_temp.act('a7e10000-0000-4000-8000-000000000010','a7e00000-0000-4000-8000-000000000003');
+do $$ begin
+ if public.enroll_tenant()<>'a7e00000-0000-4000-8000-000000000003' then raise exception 'Open policy rejected self-enrollment'; end if;
 end $$;
 
 select pg_temp.act('a7e10000-0000-4000-8000-000000000003','a7e00000-0000-4000-8000-000000000002');
@@ -193,17 +221,32 @@ do $$ begin
  if not exists(select 1 from public.introduction_requests where tenant_id='b2000000-0000-4000-8000-000000000001' and candidate_user_id='a7e10000-0000-4000-8000-000000000002' and message='Enrolled request') then raise exception 'Enrolled introduction was not stored'; end if;
  if not exists(select 1 from public.tenant_members where tenant_id='b2000000-0000-4000-8000-000000000001' and user_id='a7e10000-0000-4000-8000-000000000002') then raise exception 'Enrollment did not record membership'; end if;
  if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000002')<>1 then raise exception 'Enrollment recorded more than one tenant'; end if;
+ if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000009')<>1 then raise exception 'Invitation recorded more than one membership'; end if;
+ if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000010')<>1 then raise exception 'Open enrollment recorded more than one membership'; end if;
+ if not exists(select 1 from private.tenant_invitations where token_hash=md5('synthetic-valid-invite-token') and used_by='a7e10000-0000-4000-8000-000000000009' and used_at is not null) then raise exception 'Invitation was not consumed'; end if;
  if exists(select 1 from public.tenant_members where tenant_id='a7e00000-0000-4000-8000-000000000004' and user_id='a7e10000-0000-4000-8000-000000000006') then raise exception 'Erasure left the tenant membership'; end if;
  if not exists(select 1 from public.tenant_members where tenant_id='a7e00000-0000-4000-8000-000000000002' and user_id='a7e10000-0000-4000-8000-000000000006') then raise exception 'Erasure removed another tenant membership'; end if;
  if not exists(select 1 from public.tenant_members where tenant_id='a7e00000-0000-4000-8000-000000000004' and user_id='a7e10000-0000-4000-8000-000000000007') then raise exception 'Erasure removed the reviewer membership'; end if;
- delete from public.tenant_members where user_id in ('a7e10000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000005');
- delete from private.tenant_membership_review where user_id in ('a7e10000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000005');
+ if exists(select 1 from public.tenant_members where user_id in ('a7e10000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000005')) then raise exception 'Self-service profile created a membership'; end if;
+ delete from private.tenant_membership_review where user_id in ('a7e10000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000005','a7e10000-0000-4000-8000-000000000008');
  perform private.reconcile_tenant_memberships();
  if exists(select 1 from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000004') then raise exception 'Conflicting self-service records were granted'; end if;
  if (select count(*) from private.tenant_membership_review where user_id='a7e10000-0000-4000-8000-000000000004')<>2 then raise exception 'Conflicting tenants were not flagged for review'; end if;
- if not exists(select 1 from public.tenant_members where tenant_id='b2000000-0000-4000-8000-000000000001' and user_id='a7e10000-0000-4000-8000-000000000005') then raise exception 'Single original workspace was not granted'; end if;
- if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000005')<>1 then raise exception 'Single original workspace granted an extra tenant'; end if;
- if exists(select 1 from private.tenant_membership_review where user_id='a7e10000-0000-4000-8000-000000000005') then raise exception 'Single original workspace was flagged'; end if;
+ if exists(select 1 from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000005') then raise exception 'Single-tenant self-service account was granted'; end if;
+ if not exists(select 1 from private.tenant_membership_review where user_id='a7e10000-0000-4000-8000-000000000005' and tenant_id='b2000000-0000-4000-8000-000000000001') then raise exception 'Single-tenant self-service account was not queued'; end if;
+ if not exists(select 1 from public.tenant_members where tenant_id='b2000000-0000-4000-8000-000000000001' and user_id='a7e10000-0000-4000-8000-000000000008') then raise exception 'Operator evidence was not granted'; end if;
+ if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000008')<>1 then raise exception 'Operator evidence granted an extra tenant'; end if;
+ if not exists(select 1 from private.tenant_membership_review where user_id='a7e10000-0000-4000-8000-000000000008' and tenant_id='a7e00000-0000-4000-8000-000000000002') then raise exception 'Untrusted extra tenant was not queued'; end if;
+ if exists(select 1 from private.tenant_membership_review where user_id='a7e10000-0000-4000-8000-000000000008' and tenant_id='b2000000-0000-4000-8000-000000000001') then raise exception 'Operator tenant was queued as untrusted'; end if;
 end $$;
+reset role;
+delete from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000009';
+select pg_temp.act('a7e10000-0000-4000-8000-000000000009','a7e00000-0000-4000-8000-000000000002');
+set local role authenticated;
+do $$ begin
+ begin perform public.enroll_tenant('synthetic-valid-invite-token'); raise exception 'Used invitation was accepted again'; exception when insufficient_privilege or raise_exception then if sqlerrm='Used invitation was accepted again' then raise; end if; end;
+ if private.current_tenant() is not null then raise exception 'Reused invitation restored membership'; end if;
+end $$;
+reset role;
 select 'PASS: member writes stay inside granted tenant memberships; forged headers and direct calls are rejected' as result;
 rollback;

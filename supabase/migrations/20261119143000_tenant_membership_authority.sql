@@ -1,14 +1,20 @@
 -- Tenant authority is a membership row for auth.uid(). The x-tenant-id header only
 -- selects among memberships that already exist. Historical migrations stay unchanged.
 --
--- Backfill rule: grant membership only from operator evidence (user_roles,
--- organization_members, workflow_reviewers, and path_people, which clients cannot
--- insert). Signup does not record a tenant. When that evidence is absent and every
--- self-service record (profile, submission, introduction request, consent, program
--- profile) is in one tenant, that tenant is the account's original workspace and is
--- granted. Records in more than one tenant, or in a tenant without a grant, are not
--- turned into memberships; they are listed in private.tenant_membership_review and
--- announced with a migration NOTICE for an operator to reconcile.
+-- Backfill rule: self-service records are never enrollment evidence. Membership is
+-- granted only from operator-only records: user_roles, organization_members,
+-- workflow_reviewers, and path_people. Every account that has a profile, submission,
+-- introduction request, consent row, or program profile in a tenant it was not
+-- granted is listed in private.tenant_membership_review with no grant, whether those
+-- records span one tenant or several. Each row is also announced with
+-- NOTICE: Tenant membership needs operator review.
+--
+-- Enrollment rule: enroll_tenant does not take a tenant or organization id. The
+-- header only names which active tenant is being requested. That request is
+-- authorized when an operator has set private.tenant_enrollment_policy.open_enrollment
+-- for that tenant, or when the caller presents a valid, unexpired, single-use
+-- invitation bound to that tenant and the account email. A missing policy is closed.
+-- Self-service enrollment records exactly one membership.
 begin;
 
 create table public.tenant_members (
@@ -45,25 +51,6 @@ begin
   select tenant_id, user_id from private.workflow_reviewers
   union
   select tenant_id, user_id from private.path_people where user_id is not null
-  on conflict do nothing;
-
-  -- No server-side signup tenant was stored. One self-service workspace is the original.
-  insert into public.tenant_members(tenant_id, user_id)
-  select (array_agg(distinct activity.tenant_id))[1], activity.user_id
-  from (
-    select tenant_id, user_id from public.candidate_profiles
-    union
-    select tenant_id, user_id from public.submissions where user_id is not null
-    union
-    select tenant_id, candidate_user_id as user_id from public.introduction_requests
-    union
-    select tenant_id, user_id from public.communications_consent where user_id is not null
-    union
-    select tenant_id, user_id from private.program_profiles
-  ) activity
-  where not exists (select 1 from public.tenant_members m where m.user_id = activity.user_id)
-  group by activity.user_id
-  having count(distinct activity.tenant_id) = 1
   on conflict do nothing;
 
   insert into private.tenant_membership_review(user_id, tenant_id, sources)
@@ -108,16 +95,39 @@ $$;
 revoke all on function private.current_tenant() from public;
 grant execute on function private.current_tenant() to anon, authenticated;
 
--- The only self-service enrollment. It records exactly one tenant, taken from the
--- active header, and only when the account has none. Later calls succeed only when
--- the header matches a membership. Introduction requests and other writes do not enroll.
-create function private.enroll_tenant() returns uuid
+-- Operators enable open self-enrollment per tenant. Absent row means closed.
+create table private.tenant_enrollment_policy (
+  tenant_id uuid primary key references public.tenants(id) on delete cascade,
+  open_enrollment boolean not null default false,
+  updated_at timestamptz not null default now()
+);
+alter table private.tenant_enrollment_policy enable row level security;
+revoke all on table private.tenant_enrollment_policy from public, anon, authenticated;
+grant select, insert, update, delete on table private.tenant_enrollment_policy to service_role;
+
+-- Raw invitation tokens are not stored. email is the invited account, lowercased.
+create table private.tenant_invitations (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references public.tenants(id) on delete cascade,
+  email text not null,
+  token_hash text not null unique,
+  expires_at timestamptz not null,
+  used_at timestamptz,
+  used_by uuid references auth.users(id),
+  created_at timestamptz not null default now()
+);
+create index tenant_invitations_tenant_idx on private.tenant_invitations(tenant_id);
+alter table private.tenant_invitations enable row level security;
+revoke all on table private.tenant_invitations from public, anon, authenticated;
+grant select, insert, update, delete on table private.tenant_invitations to service_role;
+
+-- invite_token is the only argument. A tenant or organization id is never accepted.
+create function private.enroll_tenant(invite_token text default null) returns uuid
 language plpgsql security definer set search_path='' as $$
-declare uid uuid := auth.uid(); hinted uuid;
+declare uid uuid := auth.uid(); hinted uuid; account_email text; invite uuid; token text := nullif(btrim(invite_token), '');
 begin
-  if uid is null or not exists(select 1 from auth.users u where u.id = uid and u.email_confirmed_at is not null) then
-    raise exception 'Confirmed sign-in required' using errcode = '42501';
-  end if;
+  select u.email into account_email from auth.users u where u.id = uid and u.email_confirmed_at is not null;
+  if account_email is null then raise exception 'Confirmed sign-in required' using errcode = '42501'; end if;
   hinted := (
     select id from public.tenants
     where active and id::text = coalesce(nullif(current_setting('request.headers', true), '')::jsonb->>'x-tenant-id', '')
@@ -128,45 +138,41 @@ begin
   if exists(select 1 from public.tenant_members m where m.user_id = uid) then
     raise exception 'Tenant membership required' using errcode = '42501';
   end if;
+  if token is not null then
+    if length(token) < 16 or length(token) > 200 then raise exception 'Invitation not valid' using errcode = '42501'; end if;
+    select i.id into invite from private.tenant_invitations i
+    where i.token_hash = md5(token) and i.tenant_id = hinted and lower(i.email) = lower(account_email) and i.used_at is null and i.expires_at > now()
+    for update;
+    if invite is null then raise exception 'Invitation not valid' using errcode = '42501'; end if;
+    update private.tenant_invitations set used_at = now(), used_by = uid where id = invite;
+  elsif not coalesce((select open_enrollment from private.tenant_enrollment_policy p where p.tenant_id = hinted), false) then
+    raise exception 'Enrollment is closed' using errcode = '42501';
+  end if;
   insert into public.tenant_members(tenant_id, user_id) values (hinted, uid);
   return hinted;
 end $$;
-revoke all on function private.enroll_tenant() from public, anon, authenticated;
-grant execute on function private.enroll_tenant() to authenticated;
-create function public.enroll_tenant() returns uuid language sql security invoker set search_path='' as $$
-  select private.enroll_tenant()
+revoke all on function private.enroll_tenant(text) from public, anon, authenticated;
+grant execute on function private.enroll_tenant(text) to authenticated;
+create function public.enroll_tenant(invite_token text default null) returns uuid language sql security invoker set search_path='' as $$
+  select private.enroll_tenant(invite_token)
 $$;
-revoke all on function public.enroll_tenant() from public, anon;
-grant execute on function public.enroll_tenant() to authenticated;
+revoke all on function public.enroll_tenant(text) from public, anon;
+grant execute on function public.enroll_tenant(text) to authenticated;
 
 create function private.record_tenant_membership() returns trigger
 language plpgsql security definer set search_path='' as $$
-declare subject uuid := new.user_id; claim text;
+declare subject uuid := new.user_id;
 begin
   if subject is null or new.tenant_id is null then return new; end if;
-  perform pg_advisory_xact_lock(hashtextextended('tenant-member:' || subject::text, 0));
-  -- Operator evidence grants the tenant. A profile does not grant a second one.
-  if tg_table_name in ('user_roles', 'organization_members', 'workflow_reviewers', 'path_people') then
-    insert into public.tenant_members(tenant_id, user_id) values (new.tenant_id, subject) on conflict do nothing;
-    return new;
-  end if;
-  if exists(select 1 from public.tenant_members m where m.user_id = subject and m.tenant_id = new.tenant_id) then return new; end if;
-  if exists(select 1 from public.tenant_members m where m.user_id = subject) then
-    claim := coalesce(nullif(current_setting('request.jwt.claim.role', true), ''), nullif(current_setting('request.jwt.claims', true), '')::jsonb->>'role');
-    if claim = 'authenticated' and auth.uid() is not distinct from subject then
-      raise exception 'Tenant membership required' using errcode = '42501';
-    end if;
-    return new;
-  end if;
-  insert into public.tenant_members(tenant_id, user_id) values (new.tenant_id, subject);
+  if tg_table_name not in ('user_roles', 'organization_members', 'workflow_reviewers', 'path_people') then return new; end if;
+  insert into public.tenant_members(tenant_id, user_id) values (new.tenant_id, subject) on conflict do nothing;
   return new;
 end $$;
 revoke all on function private.record_tenant_membership() from public, anon, authenticated;
 
 do $$ declare target text; begin
   foreach target in array array[
-    'public.candidate_profiles','public.user_roles','public.organization_members',
-    'private.path_people','private.workflow_reviewers'
+    'public.user_roles','public.organization_members','private.path_people','private.workflow_reviewers'
   ] loop
     execute format('create trigger tenant_membership after insert on %s for each row execute function private.record_tenant_membership()', target);
   end loop;

@@ -12,6 +12,7 @@ insert into public.organizations(id,name,status,verification_status,verified_at)
  ('22000000-0000-0000-0000-000000000002','Synthetic private employer','draft','research',null);
 insert into public.organization_members(organization_id,user_id,verified_at) values('22000000-0000-0000-0000-000000000001','11000000-0000-0000-0000-000000000003',now());
 insert into public.candidate_profiles(user_id,name,email) values('11000000-0000-0000-0000-000000000002','Synthetic private person','synthetic-talent@example.test');
+insert into public.tenant_members(tenant_id,user_id) values('b2000000-0000-4000-8000-000000000001','11000000-0000-0000-0000-000000000002');
 insert into public.job_postings(id,organization_id,title,description,application_url,status,verified_at,expires_at) values
  ('33000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000001','Synthetic active job','Test only','https://example.test/apply','pending',now(),now()+interval '1 day'),
  ('33000000-0000-0000-0000-000000000002','22000000-0000-0000-0000-000000000001','Synthetic expired job','Test only','https://example.test/apply','pending',now(),now()-interval '1 day');
