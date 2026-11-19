@@ -5,7 +5,8 @@ select set_config('request.headers','{"x-tenant-id":"b2000000-0000-4000-8000-000
 insert into public.tenants(id,slug,name) values
  ('a7e00000-0000-4000-8000-000000000002','synthetic-other','Synthetic other'),
  ('a7e00000-0000-4000-8000-000000000003','synthetic-third','Synthetic third'),
- ('a7e00000-0000-4000-8000-000000000004','synthetic-erasure','Synthetic erasure');
+ ('a7e00000-0000-4000-8000-000000000004','synthetic-erasure','Synthetic erasure'),
+ ('c3000000-0000-4000-8000-000000000001','kcnow-concept','KC Now concept demonstration');
 insert into public.tenant_regions values
  ('a7e00000-0000-4000-8000-000000000002','MO','Missouri'),
  ('a7e00000-0000-4000-8000-000000000002','KS','Kansas'),
@@ -28,7 +29,8 @@ insert into auth.users(id,email,email_confirmed_at) values
  ('a7e10000-0000-4000-8000-000000000007','erasure-reviewer@example.test',now()),
  ('a7e10000-0000-4000-8000-000000000008','operator-member@example.test',now()),
  ('a7e10000-0000-4000-8000-000000000009','invitee@example.test',now()),
- ('a7e10000-0000-4000-8000-000000000010','open-member@example.test',now());
+ ('a7e10000-0000-4000-8000-000000000010','open-member@example.test',now()),
+ ('a7e10000-0000-4000-8000-000000000011','kcnow-invitee@example.test',now());
 insert into auth.sessions(id,user_id,created_at,updated_at)
 select replace(id::text,'a7e10000-','a7e60000-')::uuid, id, now(), now()
 from auth.users where id::text like 'a7e10000-%';
@@ -63,12 +65,13 @@ insert into public.candidate_profiles(tenant_id,user_id,name,email) values
  ('a7e00000-0000-4000-8000-000000000002','a7e10000-0000-4000-8000-000000000008','Operator extra profile','operator-member@example.test');
 insert into public.user_roles(tenant_id,user_id,role) values('b2000000-0000-4000-8000-000000000001','a7e10000-0000-4000-8000-000000000008','admin');
 insert into private.tenant_enrollment_policy(tenant_id,open_enrollment) values
- ('b2000000-0000-4000-8000-000000000001',true),
  ('a7e00000-0000-4000-8000-000000000003',true);
 insert into private.tenant_invitations(tenant_id,email,token_hash,expires_at) values
  ('a7e00000-0000-4000-8000-000000000002','invitee@example.test',md5('synthetic-valid-invite-token'),now()+interval '2 days'),
  ('a7e00000-0000-4000-8000-000000000002','invitee@example.test',md5('synthetic-expired-invite-token'),now()-interval '1 day'),
  ('b2000000-0000-4000-8000-000000000001','invitee@example.test',md5('synthetic-home-invite-token'),now()+interval '2 days');
+insert into private.tenant_invitations(tenant_id,email,token_hash,expires_at)
+select id,'kcnow-invitee@example.test',md5('synthetic-kcnow-invite-token'),now()+interval '2 days' from public.tenants where slug='kcnow-concept';
 insert into public.tenant_members(tenant_id,user_id) values
  ('a7e00000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000006'),
  ('a7e00000-0000-4000-8000-000000000002','a7e10000-0000-4000-8000-000000000006');
@@ -81,6 +84,8 @@ do $$ begin
  if not exists(select 1 from public.tenant_members where tenant_id='b2000000-0000-4000-8000-000000000001' and user_id='a7e10000-0000-4000-8000-000000000001') then raise exception 'Home membership was not recorded'; end if;
  if exists(select 1 from public.tenant_members where tenant_id='a7e00000-0000-4000-8000-000000000002' and user_id='a7e10000-0000-4000-8000-000000000001') then raise exception 'Member of home was recorded in the other tenant'; end if;
  if exists(select 1 from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000002') then raise exception 'Fresh account already has a membership'; end if;
+ if not exists(select 1 from private.tenant_enrollment_policy p join public.tenants t on t.id=p.tenant_id where t.slug='back2kc' and p.open_enrollment) then raise exception 'Back2KC self-enrollment is not open'; end if;
+ if coalesce((select p.open_enrollment from private.tenant_enrollment_policy p join public.tenants t on t.id=p.tenant_id where t.slug='kcnow-concept'), false) then raise exception 'KC Now self-enrollment is open'; end if;
 end $$;
 
 create function pg_temp.act(actor uuid, tenant uuid) returns void language plpgsql as $$
@@ -144,12 +149,26 @@ do $$ begin
  if private.current_tenant() is not null then raise exception 'Introduction request bound a second tenant'; end if;
  begin insert into public.introduction_requests(tenant_id,candidate_user_id,job_id,message,status) values('a7e00000-0000-4000-8000-000000000002',auth.uid(),'a7e30000-0000-4000-8000-000000000002','First action other','requested'); raise exception 'First introduction enrolled the other tenant'; exception when insufficient_privilege or foreign_key_violation or not_null_violation or raise_exception then if sqlerrm='First introduction enrolled the other tenant' then raise; end if; end;
 end $$;
-select pg_temp.act('a7e10000-0000-4000-8000-000000000002','b2000000-0000-4000-8000-000000000001');
+select pg_temp.act('a7e10000-0000-4000-8000-000000000002',(select id from public.tenants where slug='kcnow-concept'));
+do $$ begin
+ begin perform public.enroll_tenant(); raise exception 'Uninvited KC Now enrollment accepted'; exception when insufficient_privilege or raise_exception then if sqlerrm='Uninvited KC Now enrollment accepted' then raise; end if; end;
+ if private.current_tenant() is not null then raise exception 'Uninvited KC Now enrollment created authority'; end if;
+end $$;
+select pg_temp.act('a7e10000-0000-4000-8000-000000000002',(select id from public.tenants where slug='back2kc'));
 do $$ begin
  if private.current_tenant() is not null then raise exception 'Introduction requests created a membership'; end if;
- if public.enroll_tenant()<>'b2000000-0000-4000-8000-000000000001' then raise exception 'Open enrollment did not bind the deployment tenant'; end if;
+ if public.enroll_tenant()<>(select id from public.tenants where slug='back2kc') then raise exception 'Back2KC self-enrollment did not bind'; end if;
  insert into public.candidate_profiles(user_id,name,email) values(auth.uid(),'First enrollment','fresh-member@example.test');
  insert into public.introduction_requests(candidate_user_id,job_id,message,status) values(auth.uid(),'a7e30000-0000-4000-8000-000000000001','Enrolled request','requested');
+end $$;
+select pg_temp.act('a7e10000-0000-4000-8000-000000000002',(select id from public.tenants where slug='kcnow-concept'));
+do $$ begin
+ begin perform public.enroll_tenant(); raise exception 'Back2KC member self-enrolled in KC Now'; exception when insufficient_privilege or raise_exception then if sqlerrm='Back2KC member self-enrolled in KC Now' then raise; end if; end;
+ if private.current_tenant() is not null then raise exception 'KC Now became the active tenant'; end if;
+end $$;
+select pg_temp.act('a7e10000-0000-4000-8000-000000000011',(select id from public.tenants where slug='kcnow-concept'));
+do $$ begin
+ if public.enroll_tenant('synthetic-kcnow-invite-token')<>(select id from public.tenants where slug='kcnow-concept') then raise exception 'KC Now invitation was rejected'; end if;
 end $$;
 select pg_temp.act('a7e10000-0000-4000-8000-000000000002','a7e00000-0000-4000-8000-000000000002');
 do $$ begin
@@ -221,6 +240,10 @@ do $$ begin
  if not exists(select 1 from public.introduction_requests where tenant_id='b2000000-0000-4000-8000-000000000001' and candidate_user_id='a7e10000-0000-4000-8000-000000000002' and message='Enrolled request') then raise exception 'Enrolled introduction was not stored'; end if;
  if not exists(select 1 from public.tenant_members where tenant_id='b2000000-0000-4000-8000-000000000001' and user_id='a7e10000-0000-4000-8000-000000000002') then raise exception 'Enrollment did not record membership'; end if;
  if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000002')<>1 then raise exception 'Enrollment recorded more than one tenant'; end if;
+ if not exists(select 1 from public.tenant_members m join public.tenants t on t.id=m.tenant_id where m.user_id='a7e10000-0000-4000-8000-000000000002' and t.slug='back2kc') then raise exception 'Back2KC profile enrollment was not recorded'; end if;
+ if exists(select 1 from public.tenant_members m join public.tenants t on t.id=m.tenant_id where m.user_id='a7e10000-0000-4000-8000-000000000002' and t.slug='kcnow-concept') then raise exception 'Back2KC account gained KC Now membership'; end if;
+ if not exists(select 1 from public.tenant_members m join public.tenants t on t.id=m.tenant_id where m.user_id='a7e10000-0000-4000-8000-000000000011' and t.slug='kcnow-concept') then raise exception 'Invited KC Now membership was not recorded'; end if;
+ if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000011')<>1 then raise exception 'KC Now invitation recorded an extra membership'; end if;
  if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000009')<>1 then raise exception 'Invitation recorded more than one membership'; end if;
  if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000010')<>1 then raise exception 'Open enrollment recorded more than one membership'; end if;
  if not exists(select 1 from private.tenant_invitations where token_hash=md5('synthetic-valid-invite-token') and used_by='a7e10000-0000-4000-8000-000000000009' and used_at is not null) then raise exception 'Invitation was not consumed'; end if;

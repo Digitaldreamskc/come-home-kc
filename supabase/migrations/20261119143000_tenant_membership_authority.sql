@@ -11,9 +11,11 @@
 --
 -- Enrollment rule: enroll_tenant does not take a tenant or organization id. The
 -- header only names which active tenant is being requested. That request is
--- authorized when an operator has set private.tenant_enrollment_policy.open_enrollment
--- for that tenant, or when the caller presents a valid, unexpired, single-use
+-- authorized when private.tenant_enrollment_policy.open_enrollment is true for
+-- that tenant, or when the caller presents a valid, unexpired, single-use
 -- invitation bound to that tenant and the account email. A missing policy is closed.
+-- The migration opens self-enrollment only for the back2kc slug and records
+-- kcnow-concept as invite-only. Later inserts of those slugs get the same policy.
 -- Self-service enrollment records exactly one membership.
 begin;
 
@@ -104,6 +106,24 @@ create table private.tenant_enrollment_policy (
 alter table private.tenant_enrollment_policy enable row level security;
 revoke all on table private.tenant_enrollment_policy from public, anon, authenticated;
 grant select, insert, update, delete on table private.tenant_enrollment_policy to service_role;
+
+-- Slug lookup, not a shared-code UUID. Any other tenant stays closed until an operator adds a row.
+create function private.apply_enrollment_policy() returns trigger
+language plpgsql security definer set search_path='' as $$
+begin
+  if new.slug in ('back2kc','kcnow-concept') then
+    insert into private.tenant_enrollment_policy(tenant_id, open_enrollment)
+    values (new.id, new.slug = 'back2kc')
+    on conflict (tenant_id) do update set open_enrollment = excluded.open_enrollment, updated_at = now();
+  end if;
+  return new;
+end $$;
+revoke all on function private.apply_enrollment_policy() from public, anon, authenticated;
+create trigger apply_enrollment_policy after insert or update of slug on public.tenants
+for each row execute function private.apply_enrollment_policy();
+insert into private.tenant_enrollment_policy(tenant_id, open_enrollment)
+select id, slug = 'back2kc' from public.tenants where slug in ('back2kc','kcnow-concept')
+on conflict (tenant_id) do update set open_enrollment = excluded.open_enrollment, updated_at = now();
 
 -- Raw invitation tokens are not stored. email is the invited account, lowercased.
 create table private.tenant_invitations (
