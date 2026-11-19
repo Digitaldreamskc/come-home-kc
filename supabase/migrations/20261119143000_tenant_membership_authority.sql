@@ -16,7 +16,8 @@
 -- invitation bound to that tenant and the account email. A missing policy is closed.
 -- The migration opens self-enrollment only for the back2kc slug and records
 -- kcnow-concept as invite-only. Later inserts of those slugs get the same policy.
--- Self-service enrollment records exactly one membership.
+-- Open self-enrollment records at most one membership. A valid invitation can add
+-- another tenant even when the account already belongs somewhere else.
 begin;
 
 create table public.tenant_members (
@@ -130,11 +131,16 @@ create table private.tenant_invitations (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references public.tenants(id) on delete cascade,
   email text not null,
+  -- Operator-defined. participant creates a path person; programs creates a program reviewer.
+  -- member records tenant membership only. The client cannot choose this role.
+  role text not null default 'member' check (role in ('member','participant','programs')),
+  display_name text,
   token_hash text not null unique,
   expires_at timestamptz not null,
   used_at timestamptz,
   used_by uuid references auth.users(id),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  check (role <> 'participant' or (display_name is not null and length(display_name) between 1 and 200))
 );
 create index tenant_invitations_tenant_idx on private.tenant_invitations(tenant_id);
 alter table private.tenant_invitations enable row level security;
@@ -144,7 +150,7 @@ grant select, insert, update, delete on table private.tenant_invitations to serv
 -- invite_token is the only argument. A tenant or organization id is never accepted.
 create function private.enroll_tenant(invite_token text default null) returns uuid
 language plpgsql security definer set search_path='' as $$
-declare uid uuid := auth.uid(); hinted uuid; account_email text; invite uuid; token text := nullif(btrim(invite_token), '');
+declare uid uuid := auth.uid(); hinted uuid; account_email text; invite uuid; invite_role text; invite_name text; token text := nullif(btrim(invite_token), '');
 begin
   select u.email into account_email from auth.users u where u.id = uid and u.email_confirmed_at is not null;
   if account_email is null then raise exception 'Confirmed sign-in required' using errcode = '42501'; end if;
@@ -155,20 +161,24 @@ begin
   if hinted is null then raise exception 'Tenant context required' using errcode = '42501'; end if;
   perform pg_advisory_xact_lock(hashtextextended('tenant-member:' || uid::text, 0));
   if exists(select 1 from public.tenant_members m where m.user_id = uid and m.tenant_id = hinted) then return hinted; end if;
-  if exists(select 1 from public.tenant_members m where m.user_id = uid) then
-    raise exception 'Tenant membership required' using errcode = '42501';
-  end if;
   if token is not null then
     if length(token) < 16 or length(token) > 200 then raise exception 'Invitation not valid' using errcode = '42501'; end if;
-    select i.id into invite from private.tenant_invitations i
+    select i.id, i.role, i.display_name into invite, invite_role, invite_name from private.tenant_invitations i
     where i.token_hash = md5(token) and i.tenant_id = hinted and lower(i.email) = lower(account_email) and i.used_at is null and i.expires_at > now()
     for update;
     if invite is null then raise exception 'Invitation not valid' using errcode = '42501'; end if;
     update private.tenant_invitations set used_at = now(), used_by = uid where id = invite;
+  elsif exists(select 1 from public.tenant_members m where m.user_id = uid) then
+    raise exception 'Tenant membership required' using errcode = '42501';
   elsif not coalesce((select open_enrollment from private.tenant_enrollment_policy p where p.tenant_id = hinted), false) then
     raise exception 'Enrollment is closed' using errcode = '42501';
   end if;
-  insert into public.tenant_members(tenant_id, user_id) values (hinted, uid);
+  insert into public.tenant_members(tenant_id, user_id) values (hinted, uid) on conflict do nothing;
+  if invite_role = 'participant' and not exists(select 1 from private.path_people p where p.tenant_id = hinted and p.user_id = uid) then
+    insert into private.path_people(tenant_id, user_id, display_name) values (hinted, uid, invite_name);
+  elsif invite_role = 'programs' and not exists(select 1 from private.workflow_reviewers w where w.tenant_id = hinted and w.user_id = uid and w.workflow = 'programs') then
+    insert into private.workflow_reviewers(tenant_id, user_id, workflow) values (hinted, uid, 'programs');
+  end if;
   return hinted;
 end $$;
 revoke all on function private.enroll_tenant(text) from public, anon, authenticated;
@@ -201,7 +211,7 @@ end $$;
 -- Erasure of a workspace removes that tenant's membership and leaves every other tenant alone.
 create or replace function private.path_erase(deletion_id uuid) returns jsonb
 language plpgsql security definer set search_path='' as $$
-declare t uuid:=private.current_tenant(); u uuid; tab text; missing boolean; result jsonb;
+declare t uuid:=private.current_tenant(); u uuid; tab text; missing boolean; result jsonb; account_email text;
 begin
   if not private.can_review('privacy') then raise exception 'Privacy scope required' using errcode='42501'; end if;
   perform pg_advisory_xact_lock(hashtextextended(t::text, 0));
@@ -221,7 +231,16 @@ begin
   delete from private.personal_data_inventory where tenant_id=t and table_name in ('program_profiles','program_catalog','program_records','program_events') and u=any(subjects);
   perform set_config('app.program_erasure','off', true);
   result := private.path_erase_core(deletion_id);
-  delete from public.tenant_members where tenant_id=t and user_id=u;
+  -- Invitations are deleted, not retained. They store the invitee's email, and this
+  -- workspace erasure is the personal-data deletion path. No separate invitation audit
+  -- row is kept. Review notes for this person in this tenant are removed the same way.
+  -- Other tenants are left unchanged. A future global Auth deletion must repeat this
+  -- for every tenant; there is no second deletion function today.
+  select email into account_email from auth.users where id = u;
+  delete from public.tenant_members where tenant_id = t and user_id = u;
+  delete from private.tenant_membership_review where tenant_id = t and user_id = u;
+  delete from private.tenant_invitations
+  where tenant_id = t and (used_by = u or (account_email is not null and lower(email) = lower(account_email)));
   return result;
 end $$;
 

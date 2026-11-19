@@ -70,8 +70,22 @@ insert into private.tenant_invitations(tenant_id,email,token_hash,expires_at) va
  ('a7e00000-0000-4000-8000-000000000002','invitee@example.test',md5('synthetic-valid-invite-token'),now()+interval '2 days'),
  ('a7e00000-0000-4000-8000-000000000002','invitee@example.test',md5('synthetic-expired-invite-token'),now()-interval '1 day'),
  ('b2000000-0000-4000-8000-000000000001','invitee@example.test',md5('synthetic-home-invite-token'),now()+interval '2 days');
+insert into private.tenant_invitations(tenant_id,email,token_hash,expires_at,role,display_name)
+select id,'kcnow-invitee@example.test',md5('synthetic-kcnow-invite-token'),now()+interval '2 days','participant','Invited civic person' from public.tenants where slug='kcnow-concept';
+insert into private.tenant_invitations(tenant_id,email,token_hash,expires_at,role,display_name)
+select id,'fresh-member@example.test',md5('synthetic-member-kcnow-invite'),now()+interval '2 days','participant','Fresh civic person' from public.tenants where slug='kcnow-concept';
 insert into private.tenant_invitations(tenant_id,email,token_hash,expires_at)
-select id,'kcnow-invitee@example.test',md5('synthetic-kcnow-invite-token'),now()+interval '2 days' from public.tenants where slug='kcnow-concept';
+values ('a7e00000-0000-4000-8000-000000000002','someone-else@example.test',md5('synthetic-wrong-email-invite-token'),now()+interval '2 days');
+insert into private.relationship_modules(tenant_id,enabled,title)
+select id,true,'Your civic connections' from public.tenants where slug='kcnow-concept';
+insert into private.program_modules(tenant_id,enabled)
+select id,true from public.tenants where slug='kcnow-concept';
+insert into private.tenant_membership_review(user_id,tenant_id,sources) values
+ ('a7e10000-0000-4000-8000-000000000006','a7e00000-0000-4000-8000-000000000004','{candidate_profiles}'),
+ ('a7e10000-0000-4000-8000-000000000006','a7e00000-0000-4000-8000-000000000002','{candidate_profiles}');
+insert into private.tenant_invitations(tenant_id,email,token_hash,expires_at) values
+ ('a7e00000-0000-4000-8000-000000000004','erasure-subject@example.test',md5('synthetic-erasure-invite-token'),now()+interval '2 days'),
+ ('a7e00000-0000-4000-8000-000000000002','erasure-subject@example.test',md5('synthetic-kept-invite-token'),now()+interval '2 days');
 insert into public.tenant_members(tenant_id,user_id) values
  ('a7e00000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000006'),
  ('a7e00000-0000-4000-8000-000000000002','a7e10000-0000-4000-8000-000000000006');
@@ -152,6 +166,7 @@ end $$;
 select pg_temp.act('a7e10000-0000-4000-8000-000000000002',(select id from public.tenants where slug='kcnow-concept'));
 do $$ begin
  begin perform public.enroll_tenant(); raise exception 'Uninvited KC Now enrollment accepted'; exception when insufficient_privilege or raise_exception then if sqlerrm='Uninvited KC Now enrollment accepted' then raise; end if; end;
+ begin perform public.program_workspace(); raise exception 'Uninvited civic workspace opened'; exception when insufficient_privilege or raise_exception then if sqlerrm='Uninvited civic workspace opened' then raise; end if; end;
  if private.current_tenant() is not null then raise exception 'Uninvited KC Now enrollment created authority'; end if;
 end $$;
 select pg_temp.act('a7e10000-0000-4000-8000-000000000002',(select id from public.tenants where slug='back2kc'));
@@ -164,11 +179,15 @@ end $$;
 select pg_temp.act('a7e10000-0000-4000-8000-000000000002',(select id from public.tenants where slug='kcnow-concept'));
 do $$ begin
  begin perform public.enroll_tenant(); raise exception 'Back2KC member self-enrolled in KC Now'; exception when insufficient_privilege or raise_exception then if sqlerrm='Back2KC member self-enrolled in KC Now' then raise; end if; end;
- if private.current_tenant() is not null then raise exception 'KC Now became the active tenant'; end if;
+ if public.enroll_tenant('synthetic-member-kcnow-invite')<>(select id from public.tenants where slug='kcnow-concept') then raise exception 'Member invitation to KC Now was rejected'; end if;
+ if private.path_person() is null then raise exception 'Civic invitation did not create a participant'; end if;
+ if public.program_workspace() is null then raise exception 'Civic workspace rejected the invited member'; end if;
 end $$;
 select pg_temp.act('a7e10000-0000-4000-8000-000000000011',(select id from public.tenants where slug='kcnow-concept'));
 do $$ begin
  if public.enroll_tenant('synthetic-kcnow-invite-token')<>(select id from public.tenants where slug='kcnow-concept') then raise exception 'KC Now invitation was rejected'; end if;
+ if private.path_person() is null or public.program_workspace() is null then raise exception 'Invited account failed civic authorization'; end if;
+ if public.program_command('{"type":"profile","payload":{"name":"Invited civic profile"}}') is null then raise exception 'Invited civic profile was not saved'; end if;
 end $$;
 select pg_temp.act('a7e10000-0000-4000-8000-000000000002','a7e00000-0000-4000-8000-000000000002');
 do $$ begin
@@ -186,6 +205,7 @@ do $$ begin
  begin perform public.enroll_tenant('b2000000-0000-4000-8000-000000000001'); raise exception 'Caller tenant id was accepted as enrollment'; exception when insufficient_privilege or raise_exception then if sqlerrm='Caller tenant id was accepted as enrollment' then raise; end if; end;
  begin perform public.enroll_tenant('synthetic-home-invite-token'); raise exception 'Other-tenant invitation was accepted'; exception when insufficient_privilege or raise_exception then if sqlerrm='Other-tenant invitation was accepted' then raise; end if; end;
  begin perform public.enroll_tenant('synthetic-expired-invite-token'); raise exception 'Expired invitation was accepted'; exception when insufficient_privilege or raise_exception then if sqlerrm='Expired invitation was accepted' then raise; end if; end;
+ begin perform public.enroll_tenant('synthetic-wrong-email-invite-token'); raise exception 'Wrong-email invitation was accepted'; exception when insufficient_privilege or raise_exception then if sqlerrm='Wrong-email invitation was accepted' then raise; end if; end;
  if public.enroll_tenant('synthetic-valid-invite-token')<>'a7e00000-0000-4000-8000-000000000002' then raise exception 'Valid invitation was rejected'; end if;
 end $$;
 select pg_temp.act('a7e10000-0000-4000-8000-000000000010','a7e00000-0000-4000-8000-000000000003');
@@ -239,9 +259,9 @@ do $$ begin
  if exists(select 1 from public.introduction_requests where candidate_user_id='a7e10000-0000-4000-8000-000000000002' and tenant_id<>'b2000000-0000-4000-8000-000000000001') then raise exception 'Introduction was stored outside the enrolled tenant'; end if;
  if not exists(select 1 from public.introduction_requests where tenant_id='b2000000-0000-4000-8000-000000000001' and candidate_user_id='a7e10000-0000-4000-8000-000000000002' and message='Enrolled request') then raise exception 'Enrolled introduction was not stored'; end if;
  if not exists(select 1 from public.tenant_members where tenant_id='b2000000-0000-4000-8000-000000000001' and user_id='a7e10000-0000-4000-8000-000000000002') then raise exception 'Enrollment did not record membership'; end if;
- if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000002')<>1 then raise exception 'Enrollment recorded more than one tenant'; end if;
+ if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000002')<>2 then raise exception 'Back2KC member did not keep both memberships'; end if;
  if not exists(select 1 from public.tenant_members m join public.tenants t on t.id=m.tenant_id where m.user_id='a7e10000-0000-4000-8000-000000000002' and t.slug='back2kc') then raise exception 'Back2KC profile enrollment was not recorded'; end if;
- if exists(select 1 from public.tenant_members m join public.tenants t on t.id=m.tenant_id where m.user_id='a7e10000-0000-4000-8000-000000000002' and t.slug='kcnow-concept') then raise exception 'Back2KC account gained KC Now membership'; end if;
+ if not exists(select 1 from public.tenant_members m join public.tenants t on t.id=m.tenant_id where m.user_id='a7e10000-0000-4000-8000-000000000002' and t.slug='kcnow-concept') then raise exception 'KC Now invitation did not add a membership'; end if;
  if not exists(select 1 from public.tenant_members m join public.tenants t on t.id=m.tenant_id where m.user_id='a7e10000-0000-4000-8000-000000000011' and t.slug='kcnow-concept') then raise exception 'Invited KC Now membership was not recorded'; end if;
  if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000011')<>1 then raise exception 'KC Now invitation recorded an extra membership'; end if;
  if (select count(*) from public.tenant_members where user_id='a7e10000-0000-4000-8000-000000000009')<>1 then raise exception 'Invitation recorded more than one membership'; end if;
@@ -250,6 +270,10 @@ do $$ begin
  if exists(select 1 from public.tenant_members where tenant_id='a7e00000-0000-4000-8000-000000000004' and user_id='a7e10000-0000-4000-8000-000000000006') then raise exception 'Erasure left the tenant membership'; end if;
  if not exists(select 1 from public.tenant_members where tenant_id='a7e00000-0000-4000-8000-000000000002' and user_id='a7e10000-0000-4000-8000-000000000006') then raise exception 'Erasure removed another tenant membership'; end if;
  if not exists(select 1 from public.tenant_members where tenant_id='a7e00000-0000-4000-8000-000000000004' and user_id='a7e10000-0000-4000-8000-000000000007') then raise exception 'Erasure removed the reviewer membership'; end if;
+ if exists(select 1 from private.tenant_membership_review where tenant_id='a7e00000-0000-4000-8000-000000000004' and user_id='a7e10000-0000-4000-8000-000000000006') then raise exception 'Erasure left a review row'; end if;
+ if not exists(select 1 from private.tenant_membership_review where tenant_id='a7e00000-0000-4000-8000-000000000002' and user_id='a7e10000-0000-4000-8000-000000000006') then raise exception 'Erasure removed another tenant review row'; end if;
+ if exists(select 1 from private.tenant_invitations where tenant_id='a7e00000-0000-4000-8000-000000000004' and email='erasure-subject@example.test') then raise exception 'Erasure left an invitation'; end if;
+ if not exists(select 1 from private.tenant_invitations where tenant_id='a7e00000-0000-4000-8000-000000000002' and email='erasure-subject@example.test') then raise exception 'Erasure removed another tenant invitation'; end if;
  if exists(select 1 from public.tenant_members where user_id in ('a7e10000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000005')) then raise exception 'Self-service profile created a membership'; end if;
  delete from private.tenant_membership_review where user_id in ('a7e10000-0000-4000-8000-000000000004','a7e10000-0000-4000-8000-000000000005','a7e10000-0000-4000-8000-000000000008');
  perform private.reconcile_tenant_memberships();
