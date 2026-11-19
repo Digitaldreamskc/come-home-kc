@@ -1,3 +1,4 @@
+import {hostedReviewAllowed} from '../platform/preview-access';
 import {z} from 'zod';
 // Match the database's immutable 2026-11-18.1 wording; browser tests compare stored facts.
 export const pathConsentText={
@@ -20,4 +21,4 @@ export type PathCommand=z.infer<typeof pathCommand>;
 export type PersistentAttempt={id:string;request_id:string;attempt_no:number;state:string;note:string;opportunity:string;expires_at:string;invalidated_at:string|null;requester:string;connector:string;recipient:string;role:'requester'|'connector'|'recipient'|'reviewer';consents:{person_id:string|null;purpose:string;wording:string;version:string;granted:boolean;recorded_at:string;effective:boolean}[];events:{kind:string;at:string;note:string|null}[]};
 export type PersistentWorkspace={introductions_paused?:boolean;title:string;reviewer:boolean;person_id:string|null;display_name:string|null;routes:{first_edge:string;second_edge:string;connector:string;recipient:string;first_context:string;second_context:string;verification?:string;confirmed_at?:string;availability?:string}[];relationships:{id:string;context:string;other:string;visible:boolean;willing:boolean;confirmed_at:string|null;reconfirm_by:string|null}[];attempts:PersistentAttempt[]};
 // Phase 2 is deliberately restricted to the authorized isolated database and local preview.
-export function persistentPreviewAllowed(host:string|null){return process.env.ENABLE_LOCAL_DEMO==='1'&&!process.env.VERCEL&&/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host||'')&&process.env.NEXT_PUBLIC_SUPABASE_URL==='https://kxuvmilbvwwcrxiqnftx.supabase.co';}
+export function persistentPreviewAllowed(host:string|null){return hostedReviewAllowed(host)||process.env.ENABLE_LOCAL_DEMO==='1'&&!process.env.VERCEL&&/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host||'')&&process.env.NEXT_PUBLIC_SUPABASE_URL==='https://kxuvmilbvwwcrxiqnftx.supabase.co';}

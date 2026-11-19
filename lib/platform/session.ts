@@ -1,3 +1,4 @@
+import {reviewUserAllowed} from './preview-access';
 import 'server-only';
 import {cookies} from 'next/headers';
 import {createServerClient} from '@supabase/ssr';
@@ -8,5 +9,5 @@ export async function civicSession(){
  if(url!=='https://kxuvmilbvwwcrxiqnftx.supabase.co'||!key)throw Error('Isolated civic database configuration required');
  const jar=await cookies();
  const db=createServerClient(url,key,{cookieOptions:{name:'civic-auth'},global:{headers:{'x-tenant-id':civic.id}},cookies:{getAll:()=>jar.getAll(),setAll(values){try{values.forEach(({name,value,options})=>jar.set(name,value,options));}catch{/* Server component: refresh in route handler. */}}}});
- const {data:{user}}=await db.auth.getUser();return {db,user:emailConfirmed(user)?user:null};
+ const {data:{user}}=await db.auth.getUser();return {db,user:emailConfirmed(user)&&reviewUserAllowed(user?.email)?user:null};
 }
