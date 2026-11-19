@@ -1,3 +1,4 @@
+import { conversationStatuses } from '@/lib/conversation-status';
 import { regionKeys } from '@/lib/tenant-config';
 import { z } from 'zod';
 const t=z.string().max(15000),short=z.string().max(200),id=z.uuid(),date=z.string().max(40).nullable(),url=z.union([z.url().refine(v=>v.startsWith('https://')),z.literal(''),z.null()]);
@@ -5,7 +6,7 @@ export const adminSchemas={
 organizations:z.object({name:short.min(1),description:t,website:url,industry:short,headquarters_state:z.string().refine(v=>v!=='all'&&regionKeys.includes(v),'Choose an allowed region').nullable(),status:z.enum(['draft','published','archived']),verification_status:z.enum(['research','pending','verified']),source_url:url}),
 organization_locations:z.object({organization_id:id,city:short.min(1),state:z.string().refine(v=>v!=='all'&&regionKeys.includes(v),'Choose an allowed region'),source_url:url}),
 organization_members:z.object({organization_id:id,user_id:id}),
-employer_conversations:z.object({organization_id:id,contact:t,relationship_kind:short,status:short,notes:t,next_action:t,owner:short,due_date:date,source_url:url}),
+employer_conversations:z.object({organization_id:id.nullable(),contact:t,relationship_kind:short,status:z.enum(conversationStatuses),notes:t,next_action:t,owner:short,due_date:date,source_url:url,inquirer_name:short,inquirer_email:z.string().max(254),inquirer_role:short,organization_name:short,message:t,contact_consent:z.boolean()}),
 job_needs:z.object({organization_id:id,title:short.min(1),details:t,status:z.enum(['open','paused','closed','archived'])}),
 job_postings:z.object({organization_id:id,title:short.min(1),description:t,industry:short,work_mode:z.enum(['onsite','hybrid','remote']),employment_type:short,experience_level:short.optional(),salary_range:t.nullable(),application_url:url,application_instructions:t,status:z.enum(['pending','active','closed','archived']),expires_at:date,remote_eligible_states:z.array(z.string().refine(v=>v!=='all'&&regionKeys.includes(v),'Choose an allowed region')).max(regionKeys.length-1)}),
 job_locations:z.object({job_id:id,city:short.min(1),state:z.string().refine(v=>v!=='all'&&regionKeys.includes(v),'Choose an allowed region'),source_url:url}),

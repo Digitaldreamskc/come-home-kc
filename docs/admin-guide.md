@@ -13,7 +13,7 @@ Each section supports search, status filtering, sorting, record details and JSON
 
 ## Confirm an employer and its account
 
-In Employer directory, review the company description and website. Keep private contacts and conversation notes in Employer conversations. Publish only approved public fields. Research entries remain clearly labeled until verification is complete.
+In Employer directory, review the company description and website. Keep private contacts and conversation notes in Employer conversations. Publish only approved public fields. Research entries stay in this workspace and are not shown on the public directory until verification is complete.
 
 Add each confirmed office in Employer locations with its state and source. Check the verification box only after checking the source. A Missouri headquarters does not imply that every office or job is in Missouri.
 

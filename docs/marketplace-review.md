@@ -3,7 +3,7 @@
 Implemented the desktop/mobile screenshot feedback on the existing white-label marketplace.
 
 - Entire role cards are single links with underlined titles, a View role affordance, and hover/focus states. Synthetic cards open labeled read-only role details with applications and introduction requests disabled. Closing details restores keyboard focus.
-- Mobile navigation exposes Explore, For employers and Get connected in a native disclosure. Escape closes the menu. Sign in has a verified minimum 44px tap height.
+- Mobile navigation exposes Explore, Founding partners and Get connected in a native disclosure. Escape closes the menu. Sign in has a verified minimum 44px tap height.
 - The persistent regional selector scopes the city options. Region/category changes clear an incompatible city without discarding keyword search. A copied URL containing an incompatible city displays it as outside the region; the no-results state offers a complete filter reset.
 - Search uses the shorter “Search jobs or skills” placeholder. The desktop sidebar is wider; location explanation lives under City.
 - Metadata uses 13px dark text; badges/helper text are at least 12px. The reassurance line is 16px. The browser regression checks computed metadata size and a minimum 4.5:1 text/background contrast.

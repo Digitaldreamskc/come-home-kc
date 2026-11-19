@@ -8,7 +8,7 @@ Come Home KC connects people with employers, career opportunities and community 
 
 This is an isolated development application. Work is reviewed on `codex/come-home-kc-2.0`; Vercel deployment is preview-only. The existing https://back2kc-come-home.vercel.app/ prototype and its browser data remain unchanged.
 
-The authorized starter import preserved 21 employer/ecosystem relationships and five tasks in the development database. The public employer directory contains reviewed names labeled as research entries. Hiring participation, office locations and current jobs still need confirmation. Empty job or resource views accurately reflect the information reviewed so far.
+The authorized starter import preserved 21 employer/ecosystem relationships and five tasks in the development database. Imported prospect employers stay in the operator workspace. The public employer directory shows only organizations with confirmed permission to appear. It is not a directory of people. Empty job or resource views accurately reflect the information reviewed so far.
 
 ## Run locally
 

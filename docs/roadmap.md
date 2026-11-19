@@ -10,7 +10,7 @@
 
 ## Current limits
 
-- Research directory names have been reviewed for the public projection; employer participation and location verification remain active work. No current jobs or candidate pool size are implied by the starter records.
+- Imported research names are no longer rendered in the public directory. Employer participation and location verification remain active work. No current jobs or candidate pool size are implied by the starter records.
 - The workspace supports record-level search, sorting, filtering, editing and exports. The overview gives a working sequence; a calculated weekly performance dashboard and annual briefing generator are future features.
 - Matching is administrator-assisted. There is no automated ranking, messaging, interview scheduling or hiring decision service.
 - Account export downloads the currently loaded account records. Complete consent/history export and deletion fulfillment require an operator workflow.

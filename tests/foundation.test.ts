@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getTenant, tenantSchema, designTokens } from '../lib/tenant-config';
-import { parseFilters, filterJobs, DEFAULT_FILTERS } from '../lib/filters';
+import { parseFilters, filterJobs, filterOrganizations, DEFAULT_FILTERS } from '../lib/filters';
 import { demoCatalog } from '../lib/demo-catalog';
 import { connector, noAI } from '../lib/extensions';
 test('tenant config fails closed and preserves free access and human review',()=>{
@@ -19,6 +19,12 @@ test('a second synthetic geography filters with the same shared implementation',
  assert.equal(filterJobs(data.jobs,data.organizations,f,Date.now(),keys).length,3);
  assert.equal(filterJobs(data.jobs,data.organizations,{...f,region:'MO'},Date.now(),keys).length,0);
  assert.notDeepEqual(designTokens(config),designTokens(getTenant()));
+});
+test('imported research employers stay out of the public directory',()=>{
+ const data=demoCatalog(getTenant());
+ assert.equal(data.organizations.some(organization=>organization.verification_status==='research'),true);
+ assert.equal(filterOrganizations(data.organizations,DEFAULT_FILTERS).some(organization=>organization.name.includes('research listing')),false);
+ assert.equal(filterOrganizations(data.organizations,DEFAULT_FILTERS).every(organization=>organization.verification_status==='verified'),true);
 });
 test('employment and experience intersect without inventing unknown values',()=>{
  const data=demoCatalog(getTenant());

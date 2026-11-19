@@ -18,6 +18,6 @@ Import creates no public candidate data, verified employer memberships or active
 
 ## Verified development import
 
-Applied to `fgmduywfdlvomgbnibzk` (come-home-kc-development): 21 organizations, 21 corresponding private conversations and 5 tasks from 26 source records. A repeated import left organization count at 21. All 21 organizations still require location/hiring verification. After reviewing the safe projection, only names were published as research directory entries; contact names, source notes, next actions and full source records remain private. No jobs were invented or activated.
+Applied to `fgmduywfdlvomgbnibzk` (come-home-kc-development): 21 organizations, 21 corresponding private conversations and 5 tasks from 26 source records. A repeated import left organization count at 21. All 21 organizations still require location and participation verification. An earlier review published names as research directory entries. The public directory no longer renders those imported prospects. Only an organization with confirmed permission is shown. Contact names, source notes, next actions and full source records remain private. This is a code change; the hosted rows are not edited here. No jobs were invented or activated.
 
 Migration versions are copied from Supabase's actual migration history. The CLI was attempted first but could not create its home configuration directory under the current filesystem permissions; remote MCP applied the isolated migrations and returned their exact versions. No timestamp was invented.
