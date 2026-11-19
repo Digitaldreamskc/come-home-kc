@@ -5,8 +5,11 @@ select set_config('request.headers','{"x-tenant-id":"b2000000-0000-4000-8000-000
 insert into public.tenants(id,slug,name) values
  ('a7e00000-0000-4000-8000-000000000002','synthetic-other','Synthetic other'),
  ('a7e00000-0000-4000-8000-000000000003','synthetic-third','Synthetic third'),
- ('a7e00000-0000-4000-8000-000000000004','synthetic-erasure','Synthetic erasure'),
- ('c3000000-0000-4000-8000-000000000001','kcnow-concept','KC Now concept demonstration');
+ ('a7e00000-0000-4000-8000-000000000004','synthetic-erasure','Synthetic erasure');
+-- Reuse the existing isolated civic tenant, or exercise its later-insert policy on a fresh database.
+insert into public.tenants(id,slug,name)
+select 'c3000000-0000-4000-8000-000000000001','kcnow-concept','KC Now concept demonstration'
+where not exists(select 1 from public.tenants where slug='kcnow-concept');
 insert into public.tenant_regions values
  ('a7e00000-0000-4000-8000-000000000002','MO','Missouri'),
  ('a7e00000-0000-4000-8000-000000000002','KS','Kansas'),
@@ -77,9 +80,11 @@ select id,'fresh-member@example.test',md5('synthetic-member-kcnow-invite'),now()
 insert into private.tenant_invitations(tenant_id,email,token_hash,expires_at)
 values ('a7e00000-0000-4000-8000-000000000002','someone-else@example.test',md5('synthetic-wrong-email-invite-token'),now()+interval '2 days');
 insert into private.relationship_modules(tenant_id,enabled,title)
-select id,true,'Your civic connections' from public.tenants where slug='kcnow-concept';
+select id,true,'Your civic connections' from public.tenants where slug='kcnow-concept'
+on conflict(tenant_id) do update set enabled=true;
 insert into private.program_modules(tenant_id,enabled)
-select id,true from public.tenants where slug='kcnow-concept';
+select id,true from public.tenants where slug='kcnow-concept'
+on conflict(tenant_id) do update set enabled=true;
 insert into private.tenant_membership_review(user_id,tenant_id,sources) values
  ('a7e10000-0000-4000-8000-000000000006','a7e00000-0000-4000-8000-000000000004','{candidate_profiles}'),
  ('a7e10000-0000-4000-8000-000000000006','a7e00000-0000-4000-8000-000000000002','{candidate_profiles}');
