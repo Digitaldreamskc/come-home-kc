@@ -23,3 +23,15 @@ test('request cards retain names and readable secondary actions at desktop and m
  await shots(page,'request-history');
  }finally{const r=await page.request.post(root+'/api/civic/connections',{headers:{Origin:root},data:{type:'transition',attempt_id:id,to:'cancelled'}});expect(r.status()).toBe(200);}
 });
+
+test('earlier requests are collapsed and keyboard accessible with consistent cancellation labels',async({page})=>{
+ await login(page);await page.goto(root+'/civic/connections');await page.getByRole('button',{name:'Requests',exact:true}).click();
+ const earlier=page.locator('.path-earlier'),summary=earlier.locator(':scope > summary');
+ await expect(summary).toBeVisible();await expect(earlier).not.toHaveAttribute('open','');
+ await expect(earlier.locator('.path-request').first()).toBeHidden();
+ await summary.focus();await page.keyboard.press('Enter');await expect(earlier).toHaveAttribute('open','');
+ const cancelled=earlier.locator('.path-request').filter({has:page.getByText('Cancelled',{exact:true})}).first();
+ await expect(cancelled.getByText('Closed, cancelled',{exact:true})).toBeVisible();
+ await expect(cancelled.getByText('Closed, withdrawn',{exact:true})).toHaveCount(0);
+ await summary.focus();await page.keyboard.press('Enter');await expect(earlier.locator('.path-request').first()).toBeHidden();
+});

@@ -18,3 +18,17 @@ export function requestTimeline(a:PersistentAttempt){
  const reasons:Record<string,string>={changes_requested:'Closed, changes requested',team_declined:'Closed, declined by team',connector_declined:'Closed, connector declined',recipient_declined:'Closed, recipient declined',cancelled:'Closed, cancelled',expired:'Closed, expired',erased:'Closed, information removed'};
  return [...result.filter(s=>s.at),{title:reasons[a.state]||'Closed',kind:'closed',at:a.invalidated_at}];
 }
+
+export function groupRequests(attempts:PersistentAttempt[]){
+ const latest=new Map<string,number>();
+ for(const a of attempts)latest.set(a.request_id,Math.max(latest.get(a.request_id)||0,a.attempt_no));
+ const current:PersistentAttempt[]=[],earlier:PersistentAttempt[]=[];
+ for(const a of [...attempts].reverse()){
+  const superseded=a.attempt_no<(latest.get(a.request_id)||0);
+  const terminal=['completed','cancelled','expired','erased','team_declined','connector_declined','recipient_declined'].includes(a.state);
+  // A returned request still needs revision; keep that action visible until superseded.
+  const closed=!!a.invalidated_at&&a.state!=='changes_requested';
+  (superseded||terminal||closed?earlier:current).push(a);
+ }
+ return {current,earlier};
+}
