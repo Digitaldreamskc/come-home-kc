@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link, { useOpenDemo } from '@/components/open-demo/link';
 import { BrandIdentity } from '@/components/tenant-ui';
 import { tenant } from '@/lib/tenant-config';
@@ -26,6 +26,16 @@ export default function FoundingPartner({ layout = 'page' }: { layout?: 'page' |
   const [saved, setSaved] = useState<Inquiry | null>(null);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const firstField = useRef<HTMLInputElement>(null);
+  const opened = useRef(false);
+  useEffect(() => {
+    if (open) firstField.current?.focus();
+    else if (opened.current) toggleRef.current?.focus();
+    opened.current = open;
+  }, [open]);
+  function toggleForm() { setOpen(current => !current); }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -71,30 +81,16 @@ export default function FoundingPartner({ layout = 'page' }: { layout?: 'page' |
       <section className="partner-hero">
         <p className="eyebrow">BACK2KC / 2027 FOUNDING EMPLOYER & TALENT PARTNER</p>
         <h1>Invest in the next generation of Kansas City&apos;s workforce.</h1>
-        <p>A year-round charitable partnership strengthening the relationships, opportunities and sense of belonging that help people build their futures in Kansas City.</p>
-        <p className="partner-purpose">Help create a Kansas City where talent finds opportunity, newcomers find community, and the next generation has more reasons to build its future here.</p>
-        <p>2027 milestone: Back2KC&apos;s 10th anniversary celebration is planned for September 17, 2027.</p>
-      </section>
-
-      <section className="partner-snapshot" aria-label="2026 impact snapshot">
-        <p className="eyebrow">2026 IMPACT SNAPSHOT</p>
-        <div>
-          <article><strong>58</strong><p>people reported as having moved back to Kansas City through the Back2KC community and relationships.</p></article>
-          <article><strong>9th annual</strong><p>Back2KC gathering at CPKC Stadium in 2026.</p></article>
+        <div className="partner-hero-copy">
+          <p>A year-round charitable partnership strengthening the relationships, opportunities and sense of belonging that help people build their futures in Kansas City.</p>
+          <p>Help create a Kansas City where talent finds opportunity, newcomers find community, and the next generation has more reasons to build its future here.</p>
+          <p>2027 milestone: Back2KC&apos;s 10th anniversary celebration is planned for September 17, 2027.</p>
         </div>
       </section>
 
       <section aria-labelledby="pillars-title">
         <h2 id="pillars-title">Four pillars of community impact</h2>
         <ol className="partner-pillars">{pillars.map(([title, copy], index) => <li key={title}><span>0{index + 1}</span><div><h3>{title}</h3><p>{copy}</p></div></li>)}</ol>
-      </section>
-
-      <section className="partner-commitment" aria-labelledby="commitment-title">
-        <p className="eyebrow">ANNUAL CHARITABLE CONTRIBUTION</p>
-        <h2 id="commitment-title">A $25,000 charitable commitment</h2>
-        <p className="partner-amount">$25,000</p>
-        <p>January to December 2027. Supporting year-round charitable programs.</p>
-        <p>This amount is information about the partnership. It is not a checkout, an invoice, or a payment.</p>
       </section>
 
       <section aria-labelledby="receive-title">
@@ -104,31 +100,27 @@ export default function FoundingPartner({ layout = 'page' }: { layout?: 'page' |
         <div className="partner-benefits">{benefits.map(([title, copy]) => <article key={title}><h3>{title}</h3><p>{copy}</p></article>)}</div>
       </section>
 
-      <section className="partner-disclaimer" aria-label="Charitable terms">
-        <p><strong>Charitable investment, not recruitment services.</strong> Back2KC support advances accessible, community-serving programs; it does not buy candidate leads, guaranteed hires, commercial advertising, endorsements or exclusive access.</p>
-        <p><strong>Charitable giving and tax documentation.</strong> Back2KC is a 501(c)(3) nonprofit. Subject to verification of current IRS eligibility, gifts may be deductible to the extent permitted by law. Substantial donor benefits may reduce the deductible amount. Written acknowledgments will be provided; consult your tax adviser.</p>
-        <p>Program details and recognition are subject to an approved charitable program plan and written agreement.</p>
-        <p>Don&apos;t just compete for tomorrow&apos;s workforce. Help build the Kansas City that attracts it.</p>
-      </section>
-
       <section id="start-a-conversation" className="partner-inquiry" aria-labelledby="conversation-title">
         {saved ? <div className="registration-receipt"><p className="eyebrow">CONVERSATION</p><h2 id="conversation-title">The team has your note.</h2><p>{demo ? 'This conversation stayed in this browser. Nothing was submitted, saved, or emailed. Refresh the page to clear it.' : 'An operator will follow up at the email you provided. Nothing has been charged. Partnership details wait for a written agreement.'}</p><p>You are not opted into marketing. This note does not share candidate information, and there is no directory of people to browse.</p></div> : <>
           <p className="eyebrow">START A CONVERSATION</p>
           <h2 id="conversation-title">Tell the team you would like to talk.</h2>
-          <p>Share a name, organization, role and email. A message is optional. This is a conversation, not a hire request and not a payment.</p>
-          <form onSubmit={submit}>
-            <div className="partner-fields">
-              <label>Name (required)<input name="name" required maxLength={200} autoComplete="name"/></label>
-              <label>Organization (required)<input name="organization" required maxLength={200} autoComplete="organization"/></label>
-              <label>Role (required)<input name="role" required maxLength={200} autoComplete="organization-title"/></label>
-              <label>Email (required)<input name="email" type="email" required maxLength={254} autoComplete="email"/></label>
-            </div>
-            <label>Message (optional)<textarea name="message" rows={4} maxLength={5000} placeholder="What would you like to talk about?"/></label>
-            <fieldset className="consent-choices"><legend>Contact</legend><label><input type="checkbox" name="contact_consent" required/>Back2KC may contact me about this conversation. (required)</label></fieldset>
-            <div hidden><label>Leave blank<input name="website_trap" tabIndex={-1} autoComplete="off"/></label></div>
-            <p role="alert">{message}</p>
-            <button className="button primary" disabled={busy}>{busy ? 'Sending…' : 'Start a conversation'}</button>
-          </form>
+          <button ref={toggleRef} type="button" className="button primary partner-disclosure" aria-expanded={open} aria-controls="partner-conversation-form" onClick={toggleForm}>{open ? 'Hide conversation form' : 'Start a conversation'}</button>
+          <div id="partner-conversation-form" hidden={!open}>
+            <p>Share a name, organization, role and email. A message is optional. This is a conversation, not a hire request and not a payment.</p>
+            <form onSubmit={submit}>
+              <div className="partner-fields">
+                <label>Name (required)<input ref={firstField} name="name" required maxLength={200} autoComplete="name"/></label>
+                <label>Organization (required)<input name="organization" required maxLength={200} autoComplete="organization"/></label>
+                <label>Role (required)<input name="role" required maxLength={200} autoComplete="organization-title"/></label>
+                <label>Email (required)<input name="email" type="email" required maxLength={254} autoComplete="email"/></label>
+              </div>
+              <label>Message (optional)<textarea name="message" rows={4} maxLength={5000} placeholder="What would you like to talk about?"/></label>
+              <fieldset className="consent-choices"><legend>Contact</legend><label><input type="checkbox" name="contact_consent" required/>Back2KC may contact me about this conversation. (required)</label></fieldset>
+              <div hidden><label>Leave blank<input name="website_trap" tabIndex={-1} autoComplete="off"/></label></div>
+              <p role="alert">{message}</p>
+              <button className="button primary" disabled={busy}>{busy ? 'Sending…' : 'Start a conversation'}</button>
+            </form>
+          </div>
         </>}
       </section>
     </main>

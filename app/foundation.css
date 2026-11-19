@@ -84,21 +84,17 @@ a{color:inherit}button,a,input,select,summary{touch-action:manipulation}
 .partner-page{background:var(--paper);color:var(--ink)}
 .partner-main,.partner-embedded{max-width:var(--content-width);margin:0 auto;width:calc(100% - 64px);padding:8px 0 72px;display:grid;gap:36px}
 .partner-embedded{width:100%;padding:0}
-.partner-hero h1{font-size:clamp(40px,4.6vw,68px);max-width:16ch}
-.partner-hero p,.partner-purpose{max-width:46rem}
-.partner-purpose{font-size:20px}
-.partner-snapshot>div,.partner-benefits{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
-.partner-snapshot article,.partner-benefits article{background:var(--soft);border-radius:var(--radius);padding:24px}
-.partner-snapshot article{border-top:6px solid var(--gold)}
-.partner-snapshot strong{display:block;font-size:clamp(32px,4vw,52px);line-height:1;margin-bottom:12px}
+.partner-hero h1{font-size:clamp(40px,4.6vw,68px);max-width:16ch;margin:8px 0 0}
+.partner-hero-copy{display:grid;gap:22px;margin-top:32px}
+.partner-hero-copy p{margin:0;max-width:46rem;font-size:18px;line-height:1.65}
+.partner-benefits{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.partner-benefits article{background:var(--soft);border-radius:var(--radius);padding:24px}
 .partner-pillars{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:16px}
 .partner-pillars li{display:grid;grid-template-columns:72px minmax(0,1fr);gap:16px;align-items:start;padding:20px;border:1px solid var(--line);border-radius:var(--radius)}
 .partner-pillars span{font-weight:700;color:var(--blue);font-size:22px}
-.partner-commitment{background:var(--ink);color:var(--paper);border-radius:var(--radius);padding:32px}
-.partner-commitment .eyebrow,.partner-commitment p,.partner-commitment h2{color:var(--paper)}
-.partner-commitment .partner-amount{font-size:clamp(48px,6vw,80px);font-weight:700;line-height:1;color:var(--gold);margin:8px 0 12px}
-.partner-disclaimer{border-left:4px solid var(--gold);padding:4px 0 4px 20px;display:grid;gap:14px}
 .partner-inquiry{border:1px solid var(--line);border-radius:var(--radius);padding:28px}
+.partner-inquiry .partner-disclosure{margin-top:20px}
+.partner-inquiry [hidden]{display:none}
 .partner-inquiry form{display:grid;gap:16px;margin-top:16px}
 .partner-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .partner-inquiry label{font-weight:700;font-size:15px}
@@ -109,4 +105,4 @@ a{color:inherit}button,a,input,select,summary{touch-action:manipulation}
 .partner-inquiry fieldset label{display:flex;gap:12px;align-items:flex-start;font-weight:400;min-height:44px}
 .partner-inquiry input[type=checkbox]{width:20px;height:20px;min-height:20px;margin:3px 0 0;flex:0 0 20px}
 .partner-inquiry .button{justify-content:center}
-@media(max-width:700px){.partner-main{width:calc(100% - 32px);gap:28px}.partner-snapshot>div,.partner-benefits,.partner-fields,.partner-pillars li{grid-template-columns:1fr}.partner-inquiry,.partner-commitment,.partner-snapshot article,.partner-benefits article{padding:20px}.partner-inquiry .button{width:100%}}
+@media(max-width:700px){.partner-main{width:calc(100% - 32px);gap:28px}.partner-hero-copy{gap:18px;margin-top:24px}.partner-hero-copy p{font-size:18px}.partner-benefits,.partner-fields,.partner-pillars li{grid-template-columns:1fr}.partner-inquiry,.partner-benefits article{padding:20px}.partner-inquiry .button{width:100%}}
