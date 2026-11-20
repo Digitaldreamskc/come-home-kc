@@ -81,3 +81,4 @@ a{color:inherit}button,a,input,select,summary{touch-action:manipulation}
 @media(min-width:801px){.marketplace-hero{padding-bottom:4px}.section-heading{padding-top:12px;padding-bottom:12px}.category-tabs{margin-top:8px}}
 @media(max-width:800px){.wordmark.wordmark-heart .wordmark-line{font-size:16px}.wordmark-heart small{font-size:8px;letter-spacing:1px}}
 @media(max-width:420px){.wordmark.wordmark-heart .wordmark-line{font-size:14px}}
+@media(max-width:800px){.header-inner>nav{width:auto}}
