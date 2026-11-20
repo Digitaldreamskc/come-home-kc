@@ -7,7 +7,7 @@ test('mobile menu, accessible role links and safe demo details',async({page})=>{
  await expect(page.getByRole('button',{name:'Clear filters',exact:true})).toHaveCount(0);
  const signIn=page.getByRole('link',{name:'Sign in',exact:true});expect((await signIn.boundingBox())!.height).toBeGreaterThanOrEqual(44);
  await page.locator('.mobile-menu summary').click();const menu=page.getByRole('navigation',{name:'Mobile navigation'});
- await expect(menu.getByRole('link',{name:'For employers',exact:true})).toBeVisible();await expect(menu.getByRole('link',{name:/Get connected/})).toBeVisible();
+ await expect(menu.getByRole('link',{name:'Founding partners',exact:true})).toBeVisible();await expect(menu.getByRole('link',{name:/Get connected/})).toBeVisible();
  await page.screenshot({path:path.resolve('outputs/mobile-menu-390.png'),fullPage:false});
  await menu.getByRole('link',{name:'Explore',exact:true}).click();await expect(menu).toBeHidden();
  const role=page.locator('.role-card').first();await role.focus();await page.keyboard.press('Enter');
@@ -41,7 +41,7 @@ test('long role metadata remains readable, with no horizontal overflow',async({p
  for(const selector of ['.card-kicker','.location','.card-details','.card-note','.card-description'])expect(await card.locator(selector).evaluate(e=>parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(15);
  const contrast=await card.locator('.card-kicker').evaluate(e=>{const rgb=(v:string)=>v.match(/[\d.]+/g)!.slice(0,3).map(Number);const lum=(v:number[])=>v.map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4;}).reduce((a,x,i)=>a+x*[.2126,.7152,.0722][i],0);const a=lum(rgb(getComputedStyle(e).color)),b=lum(rgb(getComputedStyle(e.closest('.role-card')!).backgroundColor));return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);});expect(contrast).toBeGreaterThanOrEqual(4.5);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await expect(page.locator('.employer-invitation--mobile').getByRole('link')).toHaveAttribute('href','/signup?intent=employer');
+ await expect(page.locator('.employer-invitation--mobile').getByRole('link')).toHaveAttribute('href','/partners');
 });
 
 test('an empty unfiltered collection does not offer a redundant reset',async({page})=>{await page.goto('/preview?category=resources');await expect(page.locator('.empty-state')).toBeVisible();await expect(page.getByRole('button',{name:'Clear filters',exact:true})).toHaveCount(0);});

@@ -1,7 +1,3 @@
-import '@fontsource/montserrat/600.css';
-import '@fontsource/montserrat/700.css';
-import '@fontsource/lato/400.css';
-import '@fontsource/lato/700.css';
 import { tenant, designTokens } from '@/lib/tenant-config';
 import type { Metadata } from 'next';
 import './globals.css';

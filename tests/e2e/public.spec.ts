@@ -31,6 +31,7 @@ test('combined region/category/search filters use job location and preserve inde
  await expect(regions(page).getByRole('button',{name:'Kansas',exact:true})).toHaveAttribute('aria-pressed','true');
  await expect(page.getByRole('heading',{name:'Synthetic Two State Team'})).toBeVisible();
  await expect(page.getByRole('heading',{name:'Synthetic Unknown Location'})).toHaveCount(0);
+ await expect(page.getByText('Research directory entry')).toHaveCount(0);
  await page.getByRole('searchbox').fill('two state');
  await regions(page).getByRole('button',{name:'Missouri',exact:true}).click();
  await expect(page.getByRole('searchbox')).toHaveValue('two state');
@@ -38,6 +39,10 @@ test('combined region/category/search filters use job location and preserve inde
  await expect(page).toHaveURL(/region=MO/);await expect(page).toHaveURL(/category=employers/);await expect(page).toHaveURL(/q=two/);
  await page.reload();await expect(regions(page).getByRole('button',{name:'Missouri',exact:true})).toHaveAttribute('aria-pressed','true');
  await page.goto('/');await expect(regions(page).getByRole('button',{name:'Missouri',exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.goto('/?category=employers&region=all');
+ await expect(page.getByRole('heading',{name:'Synthetic Two State Team'})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Synthetic Unknown Location'})).toHaveCount(0);
+ await expect(page.getByText('Research directory entry')).toHaveCount(0);
 });
 test('resources serving both states appear in both and state control works with keyboard',async({page})=>{
  await catalog(page);await page.goto('/?category=resources&region=KS');

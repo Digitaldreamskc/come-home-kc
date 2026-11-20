@@ -34,7 +34,7 @@ Public and private employer fields live in different tables. An organization's h
 
 ## Geography and publication
 
-The independent region and category controls retain URL search preferences. Region is also stored in `come-home-kc-region`, leaving the original prototype's key unchanged. State filtering requires verified office locations, verified job locations, explicit remote eligibility or verified resource eligibility. Unknown-location research employers can appear in All KC with a confirmation label.
+The independent region and category controls retain URL search preferences. Region is also stored in `come-home-kc-region`, leaving the original prototype's key unchanged. State filtering requires verified office locations, verified job locations, explicit remote eligibility or verified resource eligibility. Imported research employers are not part of the public directory. Only organizations with confirmed permission appear.
 
 Jobs become public only after employer verification, publication review, valid application details, confirmed geography and a future closing date. Employer edits return a job to review. Closed or expired jobs disappear from active discovery. The browser repeats presentation checks, while database policies enforce access.
 

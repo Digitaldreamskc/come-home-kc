@@ -69,8 +69,8 @@ test('persistent history attributes consent and stacks mobile timeline labels ab
  await expect(saved.locator('.path-deadline')).not.toContainText('expire');
  await saved.getByText('History & consent records',{exact:true}).click();
  const history=saved.getByRole('region',{name:'Request history'}),consents=saved.getByRole('region',{name:'Consent records'});
- await expect(history.getByText('Review team — Route approved',{exact:true})).toBeVisible();
- await expect(history.getByText('Review team — Handoff approved',{exact:true})).toBeVisible();
+ await expect(history.getByText('Review team: Route approved',{exact:true})).toBeVisible();
+ await expect(history.getByText('Review team: Handoff approved',{exact:true})).toBeVisible();
  const emailRows=consents.locator('.path-consent-record').filter({hasText:'Share my email only'});
  await expect(emailRows.filter({hasText:'Alex Morgan'})).toContainText('Not permitted');
  await expect(emailRows.filter({hasText:'Riley Brooks'})).toContainText('Agreed');

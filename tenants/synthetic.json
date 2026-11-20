@@ -1,5 +1,5 @@
 {
-  "id":"b2000000-0000-4000-8000-000000000002","key":"synthetic","name":"Synthetic Lakes Network","product":"Lakes Connections — Test Only",
+  "id":"b2000000-0000-4000-8000-000000000002","key":"synthetic","name":"Synthetic Lakes Network","product":"Lakes Connections (Test Only)",
   "headline":"Explore your next chapter.","description":"Synthetic tenant for configuration and isolation tests. Not a real organization or opportunity directory.",
   "communityName":"Synthetic community","communityUrl":"https://example.test/community","logo":null,
   "geography":[{"key":"all","label":"All Lakes"},{"key":"MN","label":"Minnesota"},{"key":"WI","label":"Wisconsin"}],

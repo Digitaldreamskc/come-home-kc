@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from '@/components/open-demo/link';
 
 import {demonstrationNote,journeyProgress} from '@/lib/platform/presentation';
 import {useState} from 'react';
@@ -11,11 +11,11 @@ import {interestWording,type ProgramWorkspace,type ProgramCommand,type CivicProf
 
 const status=(s:string)=>({completed_self_reported:'Completed · self-reported',participation_self_reported:'Participation · self-reported',awaiting_response:'Awaiting organization response',conversation_invited:'Conversation invited',reviewed:'Reviewed',declined:'Declined',withdrawn:'Withdrawn'}[s]||s);
 
-export default function Program({section,initial}:{section:string;initial:ProgramWorkspace|null}){
+export default function Program({section,initial,onDemoSave}:{section:string;initial:ProgramWorkspace|null;onDemoSave?:(command:ProgramCommand)=>Promise<ProgramWorkspace>}){
 
  const [data,setData]=useState(initial),[notice,setNotice]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false),[filter,setFilter]=useState('all'),[feedbackId,setFeedbackId]=useState<string|null>(null);
 
- async function save(command:ProgramCommand){setFeedbackId('catalog_id' in command?command.catalog_id:null);setBusy(true);setNotice('');setError('');try{const r=await fetch('/api/civic/program',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(command)});if(!r.ok)throw Error((await r.json()).error);const refreshed=await fetch('/api/civic/program',{cache:'no-store'});if(!refreshed.ok)throw Error('Saved, but could not refresh. Reload this page.');setData(await refreshed.json());setNotice('Saved to your private civic workspace. No notification was sent.');}catch(e){setError(e instanceof Error?e.message:'Could not save');}finally{setBusy(false);}}
+ async function save(command:ProgramCommand){setFeedbackId('catalog_id' in command?command.catalog_id:null);setBusy(true);setNotice('');setError('');try{if(onDemoSave){setData(await onDemoSave(command));setNotice('Saved in this demo only. No notification was sent.');return;}const r=await fetch('/api/civic/program',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(command)});if(!r.ok)throw Error((await r.json()).error);const refreshed=await fetch('/api/civic/program',{cache:'no-store'});if(!refreshed.ok)throw Error('Saved, but could not refresh. Reload this page.');setData(await refreshed.json());setNotice('Saved to your private civic workspace. No notification was sent.');}catch(e){setError(e instanceof Error?e.message:'Could not save');}finally{setBusy(false);}}
 
  const title=civicProgram.navigation.find(([k])=>k===section)?.[1]||'';
 
@@ -27,7 +27,7 @@ export default function Program({section,initial}:{section:string;initial:Progra
 
  return <><header className="civic-page-heading"><p className="eyebrow">YOUR PRIVATE WORKSPACE · SYNTHETIC DEMONSTRATION</p><h1>{title}</h1><p>{section==='profile'?'A little context helps you find meaningful ways to participate. Nothing here becomes a public directory.':section==='learning'?'Build context before you take the next step. Learning records are self-reported, not certifications.':section==='opportunities'?'Explore fictional examples of civic contribution. These are not accepting real applications.':section==='journey'?'Track what you have actually done, with room for what comes next.':'Only records authorized for your account appear here.'}</p></header>
 
- {section==='profile'&&<><Profile initial={data.profile} save={save} busy={busy}/><details className="civic-band"><summary>Privacy & deletion</summary><p>Request removal from this civic workspace. Nothing is deleted until authorized review is complete.</p><button className="secondary" onClick={async()=>{const r=await fetch("/api/civic/privacy",{method:"POST"});const d=await r.json();if(r.ok)setNotice(d.message);else setError(d.error);}}>Request deletion of my civic information</button></details></>}
+ {section==='profile'&&<><Profile initial={data.profile} save={save} busy={busy}/><details className="civic-band"><summary>Privacy & deletion</summary><p>Request removal from this civic workspace. Nothing is deleted until authorized review is complete.</p><button className="secondary" onClick={async()=>{if(onDemoSave){setNotice('This demo has no saved personal information. Refresh to clear the form.');return;}const r=await fetch("/api/civic/privacy",{method:"POST"});const d=await r.json();if(r.ok)setNotice(d.message);else setError(d.error);}}>Request deletion of my civic information</button></details></>}
 
  {(section==='learning'||section==='opportunities')&&<><div className="civic-toolbar"><label>{section==='learning'?'Learning type':'Opportunity category'}<select value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">All categories</option>{[...new Set(data.catalog.filter(c=>c.kind===(section==='learning'?'learning':'opportunity')).map(c=>c.category))].map(c=><option key={c}>{c}</option>)}</select></label><span>Fictional examples · no live listings</span></div><div className="civic-grid">{data.catalog.filter(c=>c.kind===(section==='learning'?'learning':'opportunity')&&(filter==='all'||c.category===filter)).map(c=><CatalogCard key={c.id} catalog={c} records={records.filter(r=>r.catalog_id===c.id&&r.kind===(c.kind==='learning'?'learning':'interest'))} save={save} busy={busy} notice={feedbackId===c.id?notice:''} error={feedbackId===c.id?error:''}/>)}</div></>}
 

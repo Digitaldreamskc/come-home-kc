@@ -11,6 +11,7 @@ insert into public.user_roles(user_id,role) values('91000000-0000-4000-8000-0000
 insert into private.workflow_reviewers values('b2000000-0000-4000-8000-000000000001','91000000-0000-4000-8000-000000000001','profiles');
 insert into public.candidate_profiles(user_id,name,email) values('91000000-0000-4000-8000-000000000002','Private A','tenant-candidate@example.test');
 insert into public.candidate_profiles(tenant_id,user_id,name,email) values('b2000000-0000-4000-8000-000000000002','91000000-0000-4000-8000-000000000002','Private B','tenant-candidate@example.test');
+insert into public.tenant_members(tenant_id,user_id) values('b2000000-0000-4000-8000-000000000001','91000000-0000-4000-8000-000000000002');
 insert into public.organizations(id,name,status,verification_status,verified_at) values
  ('92000000-0000-4000-8000-000000000001','Synthetic A','published','verified',now()),
  ('92000000-0000-4000-8000-000000000003','Synthetic unowned A','draft','verified',now());
