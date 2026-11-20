@@ -2,8 +2,7 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState, useId } from 'react';
 import Link, { useOpenDemo } from '@/components/open-demo/link';
-import { BrandIdentity } from '@/components/tenant-ui';
-import { tenant } from '@/lib/tenant-config';
+import SiteHeader from '@/components/site-header';
 import '@/app/partners/fonts.css';
 import '@/app/partners/partners.css';
 
@@ -32,11 +31,6 @@ function Icon({kind}:{kind:'nodes'|'house'|'chart'|'check'|'chevron'|'camera'|'m
 function Accordion({items,variant}:{items:ReadonlyArray<readonly [string,string,string?]>;variant:'pillars'|'benefits'}){
  const [active,setActive]=useState<number|null>(0);const id=useId();
  return <div className={'partner-accordion partner-accordion--'+variant}>{items.map(([title,copy,todo],i)=><section key={title}><h3><button type="button" id={`${id}-heading-${i}`} aria-expanded={active===i} aria-controls={`${id}-panel-${i}`} onClick={()=>setActive(active===i?null:i)}><span className="partner-number">0{i+1}</span><span>{title}</span><Icon kind="chevron"/></button></h3><div role="region" aria-labelledby={`${id}-heading-${i}`} id={`${id}-panel-${i}`} hidden={active!==i}><p>{copy}</p>{todo&&<p className="partner-todo">TODO: {todo}</p>}</div></section>)}</div>;
-}
-function PartnerHeader({overview,benefitsHref,benefitsPage}:{overview:string;benefitsHref:string;benefitsPage:boolean}){
- const [menu,setMenu]=useState(false);const trigger=useRef<HTMLButtonElement>(null);const id=useId();
- const links=<><Link href={overview+'#why'}>Why join</Link><Link href={overview+'#impact'}>Our impact</Link><Link href={benefitsHref} aria-current={benefitsPage?'page':undefined}>Partner benefits</Link><Link href={overview+'#anniversary'}>10th anniversary</Link><Link className="partner-header-cta" href={benefitsPage?'#contact':overview+'#contact'}>Start a conversation</Link></>;
- return <header className="partner-header" onKeyDown={e=>{if(e.key==='Escape'&&menu){setMenu(false);trigger.current?.focus();}}}><div className="partner-container partner-header-inner"><BrandIdentity config={tenant} homeHref={overview} heartColor="#1CB5E5"/><nav className="partner-desktop-nav" aria-label="Partner navigation">{links}</nav><button ref={trigger} className="partner-menu-toggle" type="button" aria-label={menu?'Close menu':'Open menu'} aria-expanded={menu} aria-controls={id} onClick={()=>setMenu(!menu)}><Icon kind={menu?'close':'menu'}/></button></div><nav id={id} className="partner-mobile-nav" aria-label="Mobile partner navigation" hidden={!menu} onClick={()=>setMenu(false)}>{links}</nav></header>;
 }
 function PartnerFooter(){return <footer className="partner-footer"><div className="partner-container"><p>Come Home KC · by Back2KC + New2KC</p><div><a href="#contact">Contact</a><span className="partner-footer-todo">TODO: contact email · social links</span></div></div></footer>;}
 type Inquiry = { name: string; organization: string; role: string; email: string; message: string };
@@ -94,9 +88,9 @@ export default function FoundingPartner({ layout = 'page', benefitsPage = false 
     }
   }
 
-  return <div className={'partner-redesign '+(layout==='embedded'?'partner-embedded-view':'')}>
-    {layout==='page'&&<><a href="#partner-content" className="skip-link">Skip to content</a><PartnerHeader overview={overview} benefitsHref={benefitsHref} benefitsPage={benefitsPage}/></>}
+  return <>{layout==='page'&&<><a href="#partner-content" className="skip-link">Skip to content</a><SiteHeader active="partners"/></>}<div className={'partner-redesign '+(layout==='embedded'?'partner-embedded-view':'')}>
     <main id="partner-content">
+      <div className="partner-container partner-home-navigation"><Link href={demo?'/demo':'/'}>← Back to home</Link></div>
       {benefitsPage?<div className="partner-benefits-main partner-container"><Link className="partner-back" href={overview}>← Back to overview</Link><p className="partner-eyebrow">2027 Founding partners</p><h1>What founding partners receive</h1><p className="partner-benefits-intro">{intro} Select one to see the details.</p><Accordion items={benefits} variant="benefits"/></div>:<>
         <section className="partner-hero-new partner-container" aria-labelledby="partner-title"><div className="partner-hero-text"><p className="partner-eyebrow"><span className="partner-desktop-eyebrow">Back2KC · 2027 Founding Employer & Talent Partner</span><span className="partner-mobile-eyebrow">Back2KC · 2027 Founding Partner</span></p><h1 id="partner-title">Invest in the next generation of Kansas City’s workforce.</h1><p className="partner-intro">A year-round charitable partnership that helps Kansas City keep its talent, welcome newcomers and give the next generation more reasons to build their future here.</p><div className="partner-hero-actions"><a className="partner-button partner-primary" href="#contact">Start a conversation <span aria-hidden="true">→</span></a><Link className="partner-button partner-secondary" href={benefitsHref}>See partner benefits</Link></div><p className="partner-anniversary-note"><span aria-hidden="true"/>Back2KC turns 10 on September 17, 2027</p></div><div className="partner-photo"><Image src="/brand/kansas-city-skyline.jpg" alt="Downtown Kansas City skyline under a blue sky" width={600} height={600} unoptimized priority/></div></section>
         <section id="why" className="partner-why partner-container" aria-labelledby="why-title"><h2 id="why-title">Why employers join</h2><div className="partner-reasons">{reasons.map(([title,copy],i)=><article key={title}><Icon kind={(['nodes','house','chart'] as const)[i]}/><h3>{title}</h3><p>{copy}</p></article>)}</div></section>
@@ -127,5 +121,5 @@ export default function FoundingPartner({ layout = 'page', benefitsPage = false 
       </div></section>
     </main>
     {layout==='page'&&<PartnerFooter/>}
-  </div>;
+  </div></>;
 }
