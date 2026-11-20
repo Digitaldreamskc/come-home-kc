@@ -95,8 +95,6 @@ export default function FoundingPartner({ layout = 'page' }: { layout?: 'page' |
 
       <section aria-labelledby="receive-title">
         <h2 id="receive-title">What founding partners receive</h2>
-        <p>The Back2KC Regional Talent & Community Insights Briefing helps a team understand how people outside the region evaluate working and living in Kansas City. Each year, Back2KC brings together public regional data, voluntary participant research and employer conversations to explore what people know about KC opportunities, what questions remain and what would help them take a closer look.</p>
-        <p>The value is in making better-informed decisions: what work to showcase, what information to provide, which relationships to build and where to focus outreach. Specific measures depend on the information collected and its suitability for reporting. Participation also helps build a clearer regional story about the work happening here, and the people who could see a future in it.</p>
         <div className="partner-benefits">{benefits.map(([title, copy]) => <article key={title}><h3>{title}</h3><p>{copy}</p></article>)}</div>
       </section>
 
