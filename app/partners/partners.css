@@ -39,8 +39,8 @@
 .partner-redesign .partner-secondary:hover{background:var(--soft)}
 .partner-redesign .partner-anniversary-note{display:flex;gap:10px;align-items:baseline;font-size:14px;margin-top:28px}
 .partner-anniversary-note>span{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--cyan)}
-.partner-photo-placeholder{aspect-ratio:5/4;background:var(--placeholder);border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;color:var(--muted);gap:16px}
-.partner-photo-placeholder p{font-weight:600;font-size:16px}.partner-photo-placeholder small{font-size:14px}
+.partner-photo{aspect-ratio:5/4;background:var(--placeholder);border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;color:var(--muted);gap:16px}
+.partner-photo p{font-weight:600;font-size:16px}.partner-photo small{font-size:14px}
 .partner-mobile-eyebrow{display:none}
 .partner-why{padding-bottom:112px}
 .partner-reasons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px;margin-top:48px}
@@ -97,10 +97,10 @@
 .partner-contact-wrap--benefits .partner-contact{padding:48px}
 .partner-contact-wrap--benefits h2{font-size:36px;line-height:1.2;margin-top:0}
 @media(max-width:1100px){.partner-desktop-nav{gap:16px}.partner-desktop-nav a{font-size:12px}.partner-redesign .wordmark.wordmark-heart .wordmark-line{font-size:21px}.partner-hero-new{gap:32px}.partner-hero-new h1{font-size:48px}.partner-hero-actions{gap:12px}.partner-redesign .partner-button{padding-inline:20px}.partner-reasons{gap:28px}.partner-teaser{gap:24px 32px}}
-@media(max-width:959px){.partner-desktop-nav{display:none}.partner-menu-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:none;border:0;color:var(--ink);padding:8px}.partner-mobile-nav:not([hidden]){display:flex;flex-direction:column;gap:4px;padding:12px 32px 24px;border-top:1px solid var(--line)}.partner-mobile-nav a{font-size:17px;padding:8px 0}.partner-mobile-nav .partner-header-cta{padding:10px 16px;align-self:start}.partner-hero-new{grid-template-columns:1fr;gap:32px;padding-top:32px}.partner-photo-placeholder{grid-row:1;width:100%;max-width:600px;justify-self:center}.partner-hero-text h1{font-size:52px}.partner-reasons{gap:24px}.partner-reasons h3{font-size:20px}.partner-teaser{grid-template-columns:1fr}.partner-teaser ul{grid-column:1;grid-row:auto}.partner-impact-heading{display:block}.partner-impact-heading p{margin-top:20px;max-width:none}.partner-all-benefits{grid-row:3}}
+@media(max-width:959px){.partner-desktop-nav{display:none}.partner-menu-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:none;border:0;color:var(--ink);padding:8px}.partner-mobile-nav:not([hidden]){display:flex;flex-direction:column;gap:4px;padding:12px 32px 24px;border-top:1px solid var(--line)}.partner-mobile-nav a{font-size:17px;padding:8px 0}.partner-mobile-nav .partner-header-cta{padding:10px 16px;align-self:start}.partner-hero-new{grid-template-columns:1fr;gap:32px;padding-top:32px}.partner-photo{grid-row:1;width:100%;max-width:600px;justify-self:center}.partner-hero-text h1{font-size:52px}.partner-reasons{gap:24px}.partner-reasons h3{font-size:20px}.partner-teaser{grid-template-columns:1fr}.partner-teaser ul{grid-column:1;grid-row:auto}.partner-impact-heading{display:block}.partner-impact-heading p{margin-top:20px;max-width:none}.partner-all-benefits{grid-row:3}}
 @media(max-width:639px){
  .partner-container{width:calc(100% - 40px)}.partner-header-inner{min-height:72px;gap:16px}.partner-redesign .wordmark.wordmark-heart .wordmark-line{font-size:22px}.partner-redesign .wordmark .wordmark-kc{width:36px;height:34px;font-size:14px}
- .partner-mobile-nav:not([hidden]){padding:12px 20px 20px}.partner-hero-new{padding-block:24px 72px;gap:32px}.partner-photo-placeholder{border-radius:18px;padding:20px}.partner-photo-placeholder p{font-size:14px}.partner-photo-placeholder small{display:none}
+ .partner-mobile-nav:not([hidden]){padding:12px 20px 20px}.partner-hero-new{padding-block:24px 72px;gap:32px}.partner-photo{border-radius:18px;padding:20px}.partner-photo p{font-size:14px}.partner-photo small{display:none}
  .partner-redesign h1,.partner-hero-text h1,.partner-benefits-main h1{font-size:36px;line-height:1.1}.partner-redesign h2{font-size:28px;line-height:1.2}.partner-redesign h3{font-size:20px;line-height:1.25}.partner-redesign .partner-eyebrow{font-size:12px}.partner-hero-text h1{margin:24px 0}.partner-redesign .partner-intro{font-size:18px}
  .partner-hero-actions{display:grid;gap:12px;margin-top:28px}.partner-redesign .partner-button{width:100%;min-height:54px;padding:12px 16px}.partner-redesign .partner-anniversary-note{font-size:13px;margin-top:24px}.partner-desktop-eyebrow{display:none}.partner-mobile-eyebrow{display:inline}
  .partner-why{padding-bottom:72px}.partner-reasons{grid-template-columns:1fr;gap:32px;margin-top:32px}.partner-reasons article{padding-top:24px}.partner-reasons svg{margin-bottom:16px}.partner-reasons p{margin-top:12px}
@@ -120,3 +120,7 @@
  .partner-contact-wrap--benefits .partner-contact>.partner-button{grid-column:2;grid-row:1/3;align-self:center;margin-top:0}
  .partner-contact-wrap--benefits #partner-conversation-form,.partner-contact-wrap--benefits [role=status]{grid-column:1/-1}
 }
+
+/* User-supplied skyline photograph; keep the established responsive image frame. */
+.partner-photo{display:block;overflow:hidden;padding:0}
+.partner-photo img{display:block;width:100%;height:100%;aspect-ratio:5/4;object-fit:cover;object-position:center top;border-radius:inherit}
