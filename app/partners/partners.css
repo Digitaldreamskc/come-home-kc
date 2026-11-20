@@ -1,0 +1,122 @@
+.partner-redesign {
+ --ink:#121417;--muted:#4A5560;--line:#E3E7EA;--soft:#F4F6F7;--placeholder:#E9EEF1;--accent:#FFC425;--cyan:#1CB5E5;--link:#0B6E91;--link-hover:#08506A;--on-dark-muted:#C9D1D7;
+ --heading-font:'Plus Jakarta Sans',sans-serif;--body-font:'Inter',sans-serif;
+ background:#fff;color:var(--ink);font-family:var(--body-font);font-size:17px;line-height:1.6;
+}
+.partner-redesign *{min-width:0}
+.partner-redesign [hidden]{display:none!important}
+.partner-redesign h1,.partner-redesign h2,.partner-redesign h3{font-family:var(--heading-font);color:var(--ink);margin:0;max-width:none}
+.partner-redesign h1{font-size:60px;line-height:1.06;font-weight:800;letter-spacing:-.025em}
+.partner-redesign h2{font-size:40px;line-height:1.15;font-weight:700;letter-spacing:-.02em}
+.partner-redesign h3{font-size:22px;line-height:1.25;font-weight:700;letter-spacing:-.02em}
+.partner-redesign p{font-size:17px;line-height:1.6;color:var(--muted);margin:0}
+.partner-redesign a{color:var(--link);text-underline-offset:6px}
+.partner-redesign a:hover{color:var(--link-hover)}
+.partner-redesign :is(a,button,input,textarea):focus-visible{outline:2px solid var(--link);outline-offset:2px}
+.partner-redesign :is(section,div)[id]{scroll-margin-top:24px}
+.partner-container{width:calc(100% - 64px);max-width:1200px;margin-inline:auto}
+.partner-redesign .partner-eyebrow{font-size:13px;line-height:1.6;font-weight:600;text-transform:uppercase;letter-spacing:.12em}
+.partner-header{border-bottom:1px solid var(--line)}
+.partner-header-inner{min-height:88px;display:flex;justify-content:space-between;gap:24px;align-items:center}
+.partner-redesign .wordmark{color:var(--ink);font-family:var(--heading-font);font-weight:800}
+.partner-redesign .wordmark.wordmark-heart .wordmark-line{font-size:24px;font-weight:800;letter-spacing:-.04em;display:inline-flex;gap:5px;align-items:center;width:auto;height:auto;background:none;margin:0;padding:0}
+.partner-redesign .wordmark-heart small{display:none}
+.partner-redesign .wordmark .wordmark-kc{width:40px;height:38px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;letter-spacing:-.03em;margin:0;padding:0 0 5px;background-size:contain}
+.partner-desktop-nav{display:flex;align-items:center;gap:26px}
+.partner-desktop-nav a,.partner-mobile-nav a{color:var(--ink);font-size:14px;font-weight:600;text-decoration:none;min-height:44px;display:flex;align-items:center}
+.partner-desktop-nav a[aria-current=page],.partner-mobile-nav a[aria-current=page]{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px}
+.partner-header .partner-header-cta{background:var(--ink);color:white;padding:0 18px;border-radius:12px;min-height:44px}
+.partner-header .partner-header-cta:hover{background:#292E33;color:#fff}
+.partner-menu-toggle,.partner-mobile-nav{display:none}
+.partner-hero-new{padding-block:88px 112px;display:grid;grid-template-columns:1.04fr 1fr;gap:64px;align-items:center}
+.partner-hero-text h1{margin:28px 0}
+.partner-redesign .partner-intro{font-size:20px;line-height:1.55}
+.partner-hero-actions{display:flex;gap:16px;margin-top:32px;flex-wrap:wrap}
+.partner-redesign .partner-button{display:inline-flex;justify-content:center;align-items:center;gap:12px;min-height:56px;padding:12px 24px;border-radius:12px;font:600 17px/1.35 var(--body-font);text-decoration:none;cursor:pointer;border:1.5px solid transparent;text-align:center}
+.partner-redesign .partner-primary{background:var(--accent);color:var(--ink)}
+.partner-redesign .partner-primary:hover{background:#F0B715;color:var(--ink)}
+.partner-redesign .partner-secondary{background:transparent;border-color:var(--ink);color:var(--ink)}
+.partner-redesign .partner-secondary:hover{background:var(--soft)}
+.partner-redesign .partner-anniversary-note{display:flex;gap:10px;align-items:baseline;font-size:14px;margin-top:28px}
+.partner-anniversary-note>span{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--cyan)}
+.partner-photo-placeholder{aspect-ratio:5/4;background:var(--placeholder);border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;color:var(--muted);gap:16px}
+.partner-photo-placeholder p{font-weight:600;font-size:16px}.partner-photo-placeholder small{font-size:14px}
+.partner-mobile-eyebrow{display:none}
+.partner-why{padding-bottom:112px}
+.partner-reasons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px;margin-top:48px}
+.partner-reasons article{border-top:2px solid var(--ink);padding-top:28px}
+.partner-reasons svg{color:var(--link);margin-bottom:22px}
+.partner-reasons p{margin-top:16px}
+.partner-impact{background:var(--soft);padding-block:112px}
+.partner-impact-heading{display:flex;justify-content:space-between;align-items:end;gap:40px;margin-bottom:44px}
+.partner-impact-heading h2{max-width:670px}.partner-impact-heading p{max-width:310px;font-size:16px}
+.partner-mobile-impact-intro,.partner-mobile-pillars{display:none}
+.partner-pillar-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.partner-pillar-grid article{background:#fff;border:1px solid var(--line);border-radius:16px;padding:36px}
+.partner-redesign .partner-number{color:var(--link);font:700 14px/1.5 var(--body-font)}
+.partner-pillar-grid h3{margin:16px 0 12px}
+.partner-teaser{display:grid;grid-template-columns:1fr 1fr;gap:24px 64px;padding-block:112px;align-items:center}
+.partner-teaser p{margin-top:24px}
+.partner-teaser ul{grid-column:2;grid-row:1/3;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0;margin:0}
+.partner-teaser li{border:1px solid var(--line);border-radius:16px;min-height:96px;padding:24px 20px;display:flex;gap:12px;align-items:center;font-weight:600}
+.partner-teaser svg{color:var(--link);width:24px;height:24px;flex:0 0 24px}
+.partner-all-benefits{grid-column:1;display:inline-flex;align-items:center;min-height:44px;font-weight:600;justify-self:start}
+.partner-contact-wrap{margin-bottom:112px}
+.partner-contact{border-radius:24px;background:var(--ink);padding:64px;color:white}
+.partner-contact h2{color:white;font-size:48px;line-height:1.1;font-weight:800;max-width:760px;margin:20px 0}
+.partner-contact .partner-eyebrow{color:var(--accent)}
+.partner-contact p{color:var(--on-dark-muted);max-width:710px}
+.partner-contact>.partner-button{margin-top:32px}
+.partner-contact form{display:grid;gap:24px;margin-top:24px}
+.partner-contact #partner-conversation-form{border-top:1px solid #58626B;margin-top:32px;padding-top:28px}
+.partner-contact label{font-weight:500;color:white;display:block}
+.partner-contact .partner-fields{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.partner-contact input:not([type=checkbox]),.partner-contact textarea{display:block;width:100%;margin-top:8px;border:1px solid #8B969F;border-radius:8px;background:white;color:var(--ink);font-size:17px;padding:12px;min-height:48px}
+.partner-contact textarea{resize:vertical}
+.partner-contact fieldset{padding:20px;border:1px solid #8B969F;border-radius:8px;margin:0}
+.partner-contact fieldset label{display:flex;align-items:start;gap:12px;min-height:44px;font-weight:400}
+.partner-contact input[type=checkbox]{width:22px;height:22px;flex:0 0 22px;margin:4px 0;accent-color:var(--accent)}
+.partner-contact .partner-form-error{color:#FFBDB6}.partner-contact .partner-form-error:empty{display:none}
+.partner-contact form>.partner-button{justify-self:start}
+.partner-footer{border-top:1px solid var(--line);padding-block:32px}
+.partner-footer>.partner-container,.partner-footer>.partner-container>div{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.partner-footer p,.partner-footer a,.partner-footer-todo{font-size:15px;color:var(--muted)}
+.partner-footer a{display:inline-flex;align-items:center;min-height:44px}
+.partner-benefits-main{max-width:880px;padding-top:64px;padding-bottom:64px}
+.partner-back{display:inline-flex;align-items:center;min-height:44px;margin-bottom:32px;font-weight:500}
+.partner-benefits-main h1{font-size:52px;line-height:1.08;margin:20px 0 24px}
+.partner-benefits-intro{margin-bottom:48px!important;font-size:20px!important;line-height:1.55!important}
+.partner-accordion section{border-bottom:1px solid var(--line)}
+.partner-accordion section:first-child{border-top:1px solid var(--line)}
+.partner-accordion button{display:grid;grid-template-columns:32px 1fr 24px;gap:20px;align-items:center;text-align:left;min-height:88px;width:100%;padding:24px 0;border:0;background:transparent;color:var(--ink);font:700 24px/1.25 var(--heading-font);letter-spacing:-.02em}
+.partner-accordion button svg{width:24px;height:24px;transition:transform .15s}
+.partner-accordion button[aria-expanded=true] svg{transform:rotate(180deg)}
+.partner-accordion [role=region]{padding:0 44px 32px 52px}
+.partner-accordion .partner-todo{margin-top:16px}
+.partner-contact-wrap--benefits{max-width:880px;margin-bottom:112px}
+.partner-contact-wrap--benefits .partner-contact{padding:48px}
+.partner-contact-wrap--benefits h2{font-size:36px;line-height:1.2;margin-top:0}
+@media(max-width:1100px){.partner-desktop-nav{gap:16px}.partner-desktop-nav a{font-size:12px}.partner-redesign .wordmark.wordmark-heart .wordmark-line{font-size:21px}.partner-hero-new{gap:32px}.partner-hero-new h1{font-size:48px}.partner-hero-actions{gap:12px}.partner-redesign .partner-button{padding-inline:20px}.partner-reasons{gap:28px}.partner-teaser{gap:24px 32px}}
+@media(max-width:959px){.partner-desktop-nav{display:none}.partner-menu-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:none;border:0;color:var(--ink);padding:8px}.partner-mobile-nav:not([hidden]){display:flex;flex-direction:column;gap:4px;padding:12px 32px 24px;border-top:1px solid var(--line)}.partner-mobile-nav a{font-size:17px;padding:8px 0}.partner-mobile-nav .partner-header-cta{padding:10px 16px;align-self:start}.partner-hero-new{grid-template-columns:1fr;gap:32px;padding-top:32px}.partner-photo-placeholder{grid-row:1;width:100%;max-width:600px;justify-self:center}.partner-hero-text h1{font-size:52px}.partner-reasons{gap:24px}.partner-reasons h3{font-size:20px}.partner-teaser{grid-template-columns:1fr}.partner-teaser ul{grid-column:1;grid-row:auto}.partner-impact-heading{display:block}.partner-impact-heading p{margin-top:20px;max-width:none}.partner-all-benefits{grid-row:3}}
+@media(max-width:639px){
+ .partner-container{width:calc(100% - 40px)}.partner-header-inner{min-height:72px;gap:16px}.partner-redesign .wordmark.wordmark-heart .wordmark-line{font-size:22px}.partner-redesign .wordmark .wordmark-kc{width:36px;height:34px;font-size:14px}
+ .partner-mobile-nav:not([hidden]){padding:12px 20px 20px}.partner-hero-new{padding-block:24px 72px;gap:32px}.partner-photo-placeholder{border-radius:18px;padding:20px}.partner-photo-placeholder p{font-size:14px}.partner-photo-placeholder small{display:none}
+ .partner-redesign h1,.partner-hero-text h1,.partner-benefits-main h1{font-size:36px;line-height:1.1}.partner-redesign h2{font-size:28px;line-height:1.2}.partner-redesign h3{font-size:20px;line-height:1.25}.partner-redesign .partner-eyebrow{font-size:12px}.partner-hero-text h1{margin:24px 0}.partner-redesign .partner-intro{font-size:18px}
+ .partner-hero-actions{display:grid;gap:12px;margin-top:28px}.partner-redesign .partner-button{width:100%;min-height:54px;padding:12px 16px}.partner-redesign .partner-anniversary-note{font-size:13px;margin-top:24px}.partner-desktop-eyebrow{display:none}.partner-mobile-eyebrow{display:inline}
+ .partner-why{padding-bottom:72px}.partner-reasons{grid-template-columns:1fr;gap:32px;margin-top:32px}.partner-reasons article{padding-top:24px}.partner-reasons svg{margin-bottom:16px}.partner-reasons p{margin-top:12px}
+ .partner-impact{padding-block:64px}.partner-impact-heading{margin-bottom:28px}.partner-impact-heading p{font-size:17px}.partner-desktop-impact-intro,.partner-pillar-grid{display:none}.partner-mobile-impact-intro,.partner-mobile-pillars{display:block}
+ .partner-accordion--pillars{display:grid;gap:12px}.partner-accordion--pillars section{border:1px solid var(--line);background:white;border-radius:16px}.partner-accordion--pillars button{grid-template-columns:20px 1fr 20px;gap:12px;padding:20px;min-height:64px;font-size:18px}.partner-accordion--pillars button svg{width:20px;height:20px}.partner-accordion--pillars [role=region]{padding:0 20px 24px 52px}
+ .partner-teaser{padding-block:64px;gap:24px}.partner-teaser p{margin-top:20px}.partner-teaser ul{display:grid;grid-template-columns:1fr;gap:14px;margin-top:8px}.partner-teaser li{border:0;border-radius:0;min-height:0;padding:0;gap:12px}.partner-teaser svg{width:20px;height:20px;flex-basis:20px}.partner-all-benefits{margin-top:0}
+ .partner-contact-wrap{margin-bottom:64px}.partner-contact{border-radius:20px;padding:32px 24px}.partner-contact h2{font-size:30px;line-height:1.1;margin:20px 0}.partner-contact>.partner-button{margin-top:28px}.partner-contact .partner-fields{grid-template-columns:1fr}.partner-contact fieldset{padding:16px}.partner-footer{padding-block:24px}.partner-footer>.partner-container{display:block}.partner-footer>.partner-container>div{gap:12px;justify-content:start;margin-top:8px}.partner-footer p,.partner-footer a,.partner-footer-todo{font-size:15px}
+ .partner-benefits-main{padding-top:32px;padding-bottom:48px}.partner-back{margin-bottom:24px}.partner-benefits-intro{font-size:18px!important;margin-bottom:32px!important}.partner-accordion--benefits button{font-size:20px;grid-template-columns:24px 1fr 20px;gap:12px}.partner-accordion--benefits [role=region]{padding-left:36px;padding-right:0}.partner-contact-wrap--benefits .partner-contact{padding:32px 24px}.partner-contact-wrap--benefits h2{font-size:30px}
+}
+@media(prefers-reduced-motion:reduce){.partner-accordion button svg{transition:none}}
+/* The benefits reading column stays narrow; its closing invitation spans the site width. */
+@media(min-width:960px){
+ .partner-contact-wrap--benefits{max-width:1200px}
+ .partner-contact-wrap--benefits .partner-contact{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:40px;padding:64px}
+ .partner-contact-wrap--benefits h2{font-size:48px;line-height:1.1;grid-column:1;margin-bottom:20px}
+ .partner-contact-wrap--benefits .partner-contact>p{grid-column:1}
+ .partner-contact-wrap--benefits .partner-contact>.partner-button{grid-column:2;grid-row:1/3;align-self:center;margin-top:0}
+ .partner-contact-wrap--benefits #partner-conversation-form,.partner-contact-wrap--benefits [role=status]{grid-column:1/-1}
+}

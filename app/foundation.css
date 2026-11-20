@@ -81,28 +81,3 @@ a{color:inherit}button,a,input,select,summary{touch-action:manipulation}
 @media(min-width:801px){.marketplace-hero{padding-bottom:4px}.section-heading{padding-top:12px;padding-bottom:12px}.category-tabs{margin-top:8px}}
 @media(max-width:800px){.wordmark.wordmark-heart .wordmark-line{font-size:16px}.wordmark-heart small{font-size:8px;letter-spacing:1px}}
 @media(max-width:420px){.wordmark.wordmark-heart .wordmark-line{font-size:14px}}
-.partner-page{background:var(--paper);color:var(--ink)}
-.partner-main,.partner-embedded{max-width:var(--content-width);margin:0 auto;width:calc(100% - 64px);padding:8px 0 72px;display:grid;gap:36px}
-.partner-embedded{width:100%;padding:0}
-.partner-hero h1{font-size:clamp(40px,4.6vw,68px);max-width:16ch;margin:8px 0 0}
-.partner-hero-copy{display:grid;gap:22px;margin-top:32px}
-.partner-hero-copy p{margin:0;max-width:46rem;font-size:18px;line-height:1.65}
-.partner-benefits{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
-.partner-benefits article{background:var(--soft);border-radius:var(--radius);padding:24px}
-.partner-pillars{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:16px}
-.partner-pillars li{display:grid;grid-template-columns:72px minmax(0,1fr);gap:16px;align-items:start;padding:20px;border:1px solid var(--line);border-radius:var(--radius)}
-.partner-pillars span{font-weight:700;color:var(--blue);font-size:22px}
-.partner-inquiry{border:1px solid var(--line);border-radius:var(--radius);padding:28px}
-.partner-inquiry .partner-disclosure{margin-top:20px}
-.partner-inquiry [hidden]{display:none}
-.partner-inquiry form{display:grid;gap:16px;margin-top:16px}
-.partner-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.partner-inquiry label{font-weight:700;font-size:15px}
-.partner-inquiry input:not([type=checkbox]),.partner-inquiry textarea{display:block;width:100%;margin-top:8px;min-height:48px;border:1px solid #8b9aa3;border-radius:7px;padding:12px;font-size:16px;background:var(--paper);color:var(--ink)}
-.partner-inquiry textarea{min-height:120px}
-.partner-inquiry [role=alert]:empty{display:none}
-.partner-inquiry fieldset{margin:0}
-.partner-inquiry fieldset label{display:flex;gap:12px;align-items:flex-start;font-weight:400;min-height:44px}
-.partner-inquiry input[type=checkbox]{width:20px;height:20px;min-height:20px;margin:3px 0 0;flex:0 0 20px}
-.partner-inquiry .button{justify-content:center}
-@media(max-width:700px){.partner-main{width:calc(100% - 32px);gap:28px}.partner-hero-copy{gap:18px;margin-top:24px}.partner-hero-copy p{font-size:18px}.partner-benefits,.partner-fields,.partner-pillars li{grid-template-columns:1fr}.partner-inquiry,.partner-benefits article{padding:20px}.partner-inquiry .button{width:100%}}
