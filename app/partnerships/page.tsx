@@ -1,3 +1,6 @@
+import { AgreementForm,Manage } from './configure';
+import { importIntake } from './intake';
+import Cases from './cases';
 import styles from './partnerships.module.css';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -20,20 +23,28 @@ async function recordDelivery(form:FormData) {
 export default async function Partnerships({searchParams}:{searchParams:Promise<{status?:string}>}) {
   if (!configured()) return <main className={styles.workspace}><h1>Partnership workspace unavailable</h1></main>;
   const {db,user} = await session();
-  if (!user) redirect('/login?next=/portal');
+  if (!user) redirect('/login?next=/partnerships');
   const {data,error} = await db.rpc('partner_workspace');
   const {status} = await searchParams;
+  const [queue,events,orgs,jobs]=await Promise.all([db.rpc('partner_case_queue'),db.from('events').select('id,title,host_organization_id').eq('status','published'),db.from('organizations').select('id,name').eq('verification_status','verified'),db.from('job_postings').select('id,title,organization_id').eq('status','active')]);
+  const agreements:Agreement[]=data?.agreements||[];
+  const publications=await Promise.all(agreements.map(async a=>{
+    const {data:result,error}=await db.rpc('partner_publications',{agreement:a.id});if(error)throw Error('Partner publications unavailable');return result;
+  }));
   return <main className={styles.workspace}>
     <Link href={data?.staff ? '/admin' : '/portal'}>Back to workspace</Link>
-    <h1>Corporate Talent Partnerships</h1>
-    {status && <p role="status">{status==='saved' ? 'Delivery record saved.' : 'The record could not be updated. Check the current status and try again.'}</p>}
+    <h1>Corporate Talent Partnerships</h1><Link href="/ecosystem">Explore Kansas City</Link>
+    {queue.error?<p>Follow-up queue unavailable.</p>:<Cases cases={queue.data} events={events.data||[]}/>}
+    {data?.staff&&<><AgreementForm orgs={orgs.data||[]}/><details><summary>New2KC source intake</summary><p>Import the specifically authorized synthetic response into the staff review queue. The source email preference covers community updates.</p><form action={importIntake}><button>Import authorized Google Form response</button></form><Link href="/admin">Open intake review queue and tasks</Link></details></>}
+    {status && <p role="status">{status==='intake-access' ? 'Forms read access and an authorized synthetic response ID are required.' : status==='saved' ? 'Saved.' : 'The record could not be updated. Check the current status and try again.'}</p>}
     {error ? <p role="alert">Partnership records could not be loaded.</p> : !data?.agreements.length ? <p>No partnership agreements are available for this account.</p> :
-      (data.agreements as Agreement[]).map(a=><section key={a.id}>
+      agreements.map((a,i)=><section key={a.id}>
         <h2>{a.employer}</h2>
         {a.synthetic && <p><strong>Fictional employer · demonstration agreement</strong></p>}
         <p>{new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(a.value)} · {a.termStart} through {a.termEnd}</p>
         <p>{a.scope}</p><p>Contracting entity · {a.contractingEntity}</p>
-        {a.synthetic && a.id==='de270000-0000-4000-8000-000000000002' && <p><Link href="/stories/crossroads">Read the employer feature and explore open roles</Link></p>}
+        <p><Link href={'/employers/'+publications[i].organization}>Employer profile, stories, events and roles</Link></p>
+        {data.staff&&<Manage agreement={a.id} commitments={a.commitments} jobs={(jobs.data||[]).filter(x=>x.organization_id===publications[i].organization)} events={(events.data||[]).filter(x=>x.host_organization_id===publications[i].organization)}/>}
         <h3>Activation plan</h3><p>{a.plan}</p>
         <p>Hiring priorities · {a.priorities.join(', ')}</p>
         <p>Quarterly reviews · {a.reviews.join(', ')}</p><p>Renewal · {a.renewal}</p>
@@ -46,15 +57,11 @@ export default async function Partnerships({searchParams}:{searchParams:Promise<
             <button name="action" value={c.state==='scheduled'?'submit':'approve'}>{c.state==='scheduled'?'Record delivery':'Approve partner update'}</button>
           </form>}</>}
         </li>)}</ul>
-        {a.synthetic && <section><h3>Regional insights · demonstration summary</h3>
-          <p>Engineering and operations are priorities in this fictional employer’s activation plan. That observation describes one employer. Regional demand cannot be inferred from this sample.</p>
-          <p>Source · demonstration agreement, {a.termStart} through {a.termEnd}. <a href="https://kc-capital-atlas.vercel.app/">Explore the KC Capital Atlas public research</a>.</p></section>}
-        <h3>Quarterly fulfillment report</h3>
-        {Array.from({length:Number(a.termEnd.slice(0,4))-Number(a.termStart.slice(0,4))+1},(_,i)=>Number(a.termStart.slice(0,4))+i).flatMap(year=>[1,2,3,4].map(q=>{
-          const approved=a.commitments.filter(c=>c.approvedAt && Number(c.approvedAt.slice(0,4))===year && Math.ceil(Number(c.approvedAt.slice(5,7))/3)===q);
-          return <p key={q}>Q{q} {year} · {approved.length} approved {approved.length===1?'delivery':'deliveries'}{approved.length>0 && ' · '+approved.map(c=>c.deliverable).join(', ')}</p>;
-        }))}
-        <p>Source · staff delivery approvals. Participant activity is withheld in this demonstration.</p>
+        <h3>Approved period reports</h3>
+        {publications[i].reports.length===0 && <p>No reports have been approved.</p>}
+        {publications[i].reports.map((r:{start:string;end:string;snapshot:{deliveries:{deliverable:string;pillar:string}[];research:{metric_id:string;entity:string;definition:string;as_of:string;value:number;unit:string;source_url:string}[];attribution:string}})=><section key={r.start+r.end}><h4>{r.start} through {r.end}</h4><p>{r.snapshot.attribution}</p>
+        <ul>{r.snapshot.deliveries.map((d,i)=><li key={i}>{d.pillar} · {d.deliverable}</li>)}</ul>
+        {r.snapshot.research.map(m=><p key={m.metric_id}>{m.entity} · {m.value.toLocaleString()} {m.unit} · {m.as_of}. {m.definition} <a href={m.source_url}>Atlas source</a></p>)}</section>)}
       </section>)}
   </main>;
 }

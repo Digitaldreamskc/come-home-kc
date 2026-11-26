@@ -1,0 +1,7 @@
+import { save } from '../ecosystem/actions';
+export type Case={id:string;kind:string;state:string;employer:string;deliverable:string;organization:string;event:string|null;own:boolean;staff:boolean;recipient:boolean;need:string|null;permission:string;role:string|null};
+export default function Cases({cases,events}:{cases:Case[];events:{id:string;host_organization_id:string;title:string}[]}){
+ return <section><h2>Relationship follow-up</h2>{!cases.length&&<p>No requests in your queue.</p>}{cases.map(c=><article key={c.id}><h3>{c.employer} · {c.kind==='talent'?'Professional introduction':'Newcomer welcome'}</h3>
+ <p>{c.deliverable} · {c.state}</p><p>{c.role||c.need||c.event}</p><p>{c.permission}</p>{c.event&&<p>Recommended gathering · {c.event}</p>}
+ {([['refer',c.staff&&c.state==='requested','Review permission and refer'],['accept',c.recipient&&c.kind==='talent'&&c.state==='referred','Accept introduction'],['complete',c.own&&(c.state==='accepted'||c.kind==='welcome'&&c.state==='referred'),'Report completed connection'],['withdraw',c.own&&c.state!=='withdrawn','Withdraw permission']] as const).filter(x=>x[1]).map(([op,,label])=><form key={op} action={save}><input type="hidden" name="operation" value={op}/><input type="hidden" name="case" value={c.id}/>{op==='refer'&&c.kind==='welcome'&&<label>Gathering<select required name="event">{events.filter(e=>e.host_organization_id===c.organization).map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label>}<button>{label}</button></form>)}</article>)}</section>
+}
