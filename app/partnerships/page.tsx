@@ -35,7 +35,7 @@ export default async function Partnerships({searchParams}:{searchParams:Promise<
     <Link href={data?.staff ? '/admin' : '/portal'}>Back to workspace</Link>
     <h1>Corporate Talent Partnerships</h1><Link href="/ecosystem">Explore Kansas City</Link>
     {queue.error?<p>Follow-up queue unavailable.</p>:<Cases cases={queue.data} events={events.data||[]}/>}
-    {data?.staff&&<><AgreementForm orgs={orgs.data||[]}/><details><summary>New2KC source intake</summary><p>Import the specifically authorized synthetic response into the staff review queue. The source email preference covers community updates.</p><form action={importIntake}><button>Import authorized Google Form response</button></form><Link href="/admin">Open intake review queue and tasks</Link></details></>}
+    {data?.staff&&<><AgreementForm orgs={orgs.data||[]}/><details><summary>New2KC source intake</summary><p>Import the specifically authorized synthetic response into the staff review queue. The source email preference covers community updates.</p><form action={importIntake}><button>Import authorized Google Form response</button></form><Link href="/admin?section=submissions">Review intake</Link> · <Link href="/admin?section=tasks">Open staff tasks</Link></details></>}
     {status && <p role="status">{status==='intake-access' ? 'Forms read access and an authorized synthetic response ID are required.' : status==='saved' ? 'Saved.' : 'The record could not be updated. Check the current status and try again.'}</p>}
     {error ? <p role="alert">Partnership records could not be loaded.</p> : !data?.agreements.length ? <p>No partnership agreements are available for this account.</p> :
       agreements.map((a,i)=><section key={a.id}>
@@ -61,7 +61,7 @@ export default async function Partnerships({searchParams}:{searchParams:Promise<
         {publications[i].reports.length===0 && <p>No reports have been approved.</p>}
         {publications[i].reports.map((r:{start:string;end:string;snapshot:{deliveries:{deliverable:string;pillar:string}[];research:{metric_id:string;entity:string;definition:string;as_of:string;value:number;unit:string;source_url:string}[];attribution:string}})=><section key={r.start+r.end}><h4>{r.start} through {r.end}</h4><p>{r.snapshot.attribution}</p>
         <ul>{r.snapshot.deliveries.map((d,i)=><li key={i}>{d.pillar} · {d.deliverable}</li>)}</ul>
-        {r.snapshot.research.map(m=><p key={m.metric_id}>{m.entity} · {m.value.toLocaleString()} {m.unit} · {m.as_of}. {m.definition} <a href={m.source_url}>Atlas source</a></p>)}</section>)}
+        {r.snapshot.research.length>0 && <p>Regional context from KC Capital Atlas. Each observation applies to the named entity and source period. These metrics do not measure hiring, newcomer activity or partner impact.</p>}{r.snapshot.research.map(m=><p key={m.metric_id}>{m.entity} · {m.value.toLocaleString()} {m.unit} · {m.as_of}. {m.definition} <a href={m.source_url}>Atlas source</a></p>)}</section>)}
       </section>)}
   </main>;
 }
