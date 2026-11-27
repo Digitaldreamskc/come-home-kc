@@ -25,7 +25,7 @@ export default function SiteHeader({config=tenant}:{config?:TenantConfig}){
   return <header className="site-header"><div className="header-inner">
     <BrandIdentity config={config} homeHref={home}/>
     <div className="header-actions"><details className="section-menu" ref={menu} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))e.currentTarget.open=false;}} onKeyDown={e=>{if(e.key==='Escape'){e.currentTarget.open=false;e.currentTarget.querySelector('summary')?.focus();}}}>
-      <summary>Menu</summary><nav aria-label="Site sections">{sections.map(([name,href])=><Link key={name} href={href} aria-current={path===href?'page':undefined} onClick={()=>{if(menu.current)menu.current.open=false;}}>{name}</Link>)}</nav>
+      <summary><span className="site-menu-hamburger" aria-hidden="true"/>Menu</summary><nav aria-label="Site sections">{sections.map(([name,href])=><Link key={name} href={href} aria-current={path===href?'page':undefined} onClick={()=>{if(menu.current)menu.current.open=false;}}>{name}</Link>)}</nav>
     </details><Link href={demo?'/demo/paths':config.welcomeFormUrl?'/get-connected':config.communityUrl} className="button primary">Get connected</Link></div>
   </div></header>;
 }
