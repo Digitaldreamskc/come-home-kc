@@ -1,0 +1,3 @@
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values('ecosystem-application-logos','ecosystem-application-logos',false,1048576,array['image/png','image/jpeg','image/gif']) on conflict(id) do nothing;
+create policy ecosystem_logo_insert on storage.objects for insert to authenticated with check(bucket_id='ecosystem-application-logos' and (storage.foldername(name))[1]=(select auth.uid())::text);
+create policy ecosystem_logo_read on storage.objects for select to authenticated using(bucket_id='ecosystem-application-logos' and ((storage.foldername(name))[1]=(select auth.uid())::text or public.user_is_admin()));
