@@ -115,3 +115,24 @@ main>.notice+.section-head h2{font-size:clamp(38px,4vw,56px)}
 
 /* Connections: compact search-first flow and progressive relationship detail. */
 .cx-heading{display:block;padding:24px 28px;margin-bottom:16px}.cx-heading h2{font-size:clamp(34px,4vw,48px);margin:8px 0 12px}.cx-heading p{max-width:850px;margin:0}.cx-source-context{display:block;padding:8px 20px;margin:12px 0}.cx-source-context summary{font-size:14px}.cx-source-context p{font-size:14px;max-width:850px}.cx-collections{margin:16px 0}.cx-search{margin:16px 0;padding:20px}.cx-selection{margin:16px 0}.cx-relationships{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:16px}.cx-relationships>summary{cursor:pointer;font-size:16px;font-weight:600}.cx-relationships>p{margin:12px 0}.cx-relationships .pagination{gap:8px;flex-wrap:wrap}.cx-map-guide{padding:14px 18px}.cx-map-guide p{margin:6px 0}.cx-evidence{padding:20px}.cx-evidence h3{font-size:23px}.cx-evidence .cx-statement{font-size:17px}.cx-evidence p{margin:12px 0}.cx-evidence-actions{gap:6px}@media(max-width:950px){.cx-evidence{grid-row:auto}.cx-workspace{gap:14px}}@media(max-width:600px){.cx-heading{padding:20px}.cx-heading h2{font-size:34px}.cx-search{padding:16px}.cx-source-context{padding:8px 16px}.cx-map-scroll{max-height:350px}.cx-evidence{padding:18px}}
+
+/* Integrated 2KC header, isolated from Atlas research layout. */
+.atlas-2kc-header{border-top:5px solid #00aeef;border-bottom:1px solid #dfdfd9;background:#fffefb;color:#171919;position:relative;z-index:50;font-family:Arial,sans-serif}
+.atlas-2kc-header-inner{max-width:1360px;width:calc(100% - 64px);margin:auto;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 0}
+.atlas-2kc-brand{color:#171919;text-decoration:none;display:flex;flex-direction:column;white-space:nowrap;font-size:23px;letter-spacing:-1.3px;font-weight:900;line-height:1.1}
+.atlas-2kc-heart{display:inline-grid;place-items:center;width:2.35em;height:2.1em;vertical-align:middle;padding-bottom:.2em;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 58'%3E%3Cpath fill='%2300aeef' d='M32 56 6 31C-9 16 10-8 27 7l5 5 5-5c17-15 36 9 21 24Z'/%3E%3C/svg%3E")}
+.atlas-2kc-brand small{font-size:9px;letter-spacing:2.2px;margin-top:8px;color:#171919;font-weight:700}
+.atlas-2kc-actions{display:flex;align-items:center;gap:20px}
+.atlas-2kc-menu{position:relative}
+.atlas-2kc-menu summary{display:flex;align-items:center;gap:9px;min-height:44px;cursor:pointer;font-size:15px;font-weight:700;padding:8px;list-style:none}
+.atlas-2kc-menu summary::-webkit-details-marker{display:none}
+.atlas-hamburger{display:inline-block;width:17px;height:13px;border-block:2px solid currentColor;position:relative}
+.atlas-hamburger:after{content:'';position:absolute;top:4px;left:0;right:0;border-top:2px solid currentColor}
+.atlas-2kc-menu nav{position:absolute;right:0;top:100%;width:265px;max-width:calc(100vw - 32px);max-height:min(68vh,620px);overflow-y:auto;background:#fffefb;border:1px solid #dfdfd9;border-radius:10px;box-shadow:0 8px 24px #10182018;padding:6px;display:flex;flex-direction:column;gap:0}
+.atlas-2kc-menu:not([open]) nav{display:none}
+.atlas-2kc-menu nav a,.atlas-2kc-menu nav button{display:flex;align-items:center;min-height:40px;padding:8px 12px;text-align:left;font-size:14px;color:#171919;border-radius:6px;background:transparent;text-decoration:none;white-space:normal}
+.atlas-2kc-menu nav a:hover,.atlas-2kc-menu nav button:hover,.atlas-2kc-menu nav [aria-current=page]{background:#f4f3ee;color:#171919}
+.atlas-menu-label{font-size:10px;font-weight:700;letter-spacing:1px;color:#565d60;padding:12px 12px 4px}
+.atlas-2kc-connect{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 18px;background:#fdb924;color:#171919;font-weight:700;font-size:14px;text-decoration:none;border-radius:9px;white-space:nowrap}
+@media(max-width:700px){.atlas-2kc-header-inner{width:calc(100% - 32px);gap:8px;padding:14px 0}.atlas-2kc-brand{font-size:17px}.atlas-2kc-brand small{font-size:7px;letter-spacing:1.4px}.atlas-2kc-actions{gap:4px}.atlas-2kc-menu summary{font-size:13px;padding:6px}.atlas-2kc-connect{font-size:12px;padding:9px}.atlas-2kc-menu{position:static}.atlas-2kc-menu nav{right:16px;top:100%}}
+@media(max-width:360px){.atlas-2kc-connect{display:none}}
