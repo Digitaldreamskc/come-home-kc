@@ -2,7 +2,7 @@
   "id":"b2000000-0000-4000-8000-000000000001","key":"back2kc","name":"Back2KC","product":"Come Home KC",
   "headline":"Find your people. Find your opportunity.",
   "description":"Explore careers, connect with employers, and find the resources helping you build your next chapter in Kansas City.",
-  "communityName":"New2KC","communityUrl":"https://come-home-kc-explorer.mary473407.chatgpt.site","welcomeFormUrl":"https://docs.google.com/forms/d/e/1FAIpQLSfnWTbHNmGrOPfWz_tdE9hk7dEjGWouoVOy1PGzN967kufAWA/viewform",
+  "communityName":"New2KC","communityUrl":"/new2kc","welcomeFormUrl":"https://docs.google.com/forms/d/e/1FAIpQLSfnWTbHNmGrOPfWz_tdE9hk7dEjGWouoVOy1PGzN967kufAWA/viewform",
   "logo":"/brand/back2kc.png",
   "geography":[{"key":"all","label":"All KC"},{"key":"MO","label":"Missouri"},{"key":"KS","label":"Kansas"}],
   "tokens":{"blue":"#00AEEF","gold":"#FDB924","ink":"#171919","paper":"#FFFEFB","soft":"#F4F3EE","muted":"#565D60","headingFont":"\"ITC Avant Garde Gothic Pro\", \"Avant Garde\", Arial, sans-serif","bodyFont":"\"ITC Avant Garde Gothic Pro\", \"Avant Garde\", Arial, sans-serif","radius":18,"maxWidth":1360},

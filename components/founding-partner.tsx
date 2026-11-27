@@ -88,7 +88,7 @@ export default function FoundingPartner({ layout = 'page', benefitsPage = false 
     }
   }
 
-  return <>{layout==='page'&&<><a href="#partner-content" className="skip-link">Skip to content</a><SiteHeader active="partners"/></>}<div className={'partner-redesign '+(layout==='embedded'?'partner-embedded-view':'')}>
+  return <>{layout==='page'&&<><a href="#partner-content" className="skip-link">Skip to content</a><SiteHeader/></>}<div className={'partner-redesign '+(layout==='embedded'?'partner-embedded-view':'')}>
     <main id="partner-content">
       <div className="partner-container partner-home-navigation"><Link href={demo?'/demo':'/'}>← Back to home</Link></div>
       {benefitsPage?<div className="partner-benefits-main partner-container"><Link className="partner-back" href={overview}>← Back to overview</Link><p className="partner-eyebrow">2027 Founding partners</p><h1>What founding partners receive</h1><p className="partner-benefits-intro">{intro} Select one to see the details.</p><Accordion items={benefits} variant="benefits"/></div>:<>

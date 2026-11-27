@@ -1,10 +1,31 @@
 "use client";
 import Link from 'next/link';
+import {usePathname} from 'next/navigation';
+import {useEffect,useRef} from 'react';
 import {useOpenDemo} from './open-demo/link';
 import {BrandIdentity} from './tenant-ui';
 import {tenant,type TenantConfig} from '@/lib/tenant-config';
-export default function SiteHeader({config=tenant,active}:{config?:TenantConfig;active?:'home'|'partners'|'ecosystem'}){
- const demo=useOpenDemo(),home=demo?'/demo':'/',partners=demo?'/demo/partners':'/partners';
- const links=<><Link href={home} aria-current={active==='home'?'page':undefined}>Marketplace</Link><Link href="/ecosystem" aria-current={active==='ecosystem'?'page':undefined}>Explore KC</Link><Link href={partners} aria-current={active==='partners'?'page':undefined}>Founding partners</Link>{!demo&&config.welcomeFormUrl&&<a href={config.communityUrl}>{config.communityName}</a>}<Link href={demo?'/demo/paths':config.welcomeFormUrl?'/get-connected':config.communityUrl}>Get connected</Link><Link href={demo?'/demo/kcnow':'/partnerships'} className="button button-outline small">{demo?'KC Now concept':'My workspace'}</Link></>;
- return <header className="site-header"><div className="header-inner"><BrandIdentity config={config} homeHref={home}/><details className="mobile-menu" onKeyDown={e=>{if(e.key==='Escape'){e.currentTarget.open=false;e.currentTarget.querySelector('summary')?.focus();}}}><summary>Menu</summary><nav aria-label="Mobile navigation" onClick={e=>{if((e.target as HTMLElement).closest('a'))e.currentTarget.closest('details')?.removeAttribute('open');}}>{links}</nav></details><nav aria-label="Main navigation">{links}</nav></div></header>;
+
+export default function SiteHeader({config=tenant}:{config?:TenantConfig}){
+  const demo=useOpenDemo(),path=usePathname();
+  const menu=useRef<HTMLDetailsElement>(null);
+  const home=demo?'/demo':'/';
+  const sections=[
+    ['Home',home],['Marketplace',demo?'/demo':'/marketplace'],
+    ...(config.welcomeFormUrl&&!demo?[[config.communityName,config.communityUrl]]:[]),
+    ['Founding partners',demo?'/demo/partners':'/partners'],
+    ...(!demo?[['Corporate Talent Partners','/corporate-partners']]:[]),
+    [demo?'KC Now concept':'My workspace',demo?'/demo/kcnow':'/partnerships']
+  ];
+  useEffect(()=>{
+    function outside(event:PointerEvent){if(menu.current&&!menu.current.contains(event.target as Node))menu.current.open=false;}
+    document.addEventListener('pointerdown',outside);
+    return ()=>document.removeEventListener('pointerdown',outside);
+  },[]);
+  return <header className="site-header"><div className="header-inner">
+    <BrandIdentity config={config} homeHref={home}/>
+    <div className="header-actions"><details className="section-menu" ref={menu} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))e.currentTarget.open=false;}} onKeyDown={e=>{if(e.key==='Escape'){e.currentTarget.open=false;e.currentTarget.querySelector('summary')?.focus();}}}>
+      <summary>Menu</summary><nav aria-label="Site sections">{sections.map(([name,href])=><Link key={name} href={href} aria-current={path===href?'page':undefined} onClick={()=>{if(menu.current)menu.current.open=false;}}>{name}</Link>)}</nav>
+    </details><Link href={demo?'/demo/paths':config.welcomeFormUrl?'/get-connected':config.communityUrl} className="button primary">Get connected</Link></div>
+  </div></header>;
 }

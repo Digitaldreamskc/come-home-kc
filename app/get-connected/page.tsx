@@ -14,7 +14,7 @@ export default function GetConnected() {
     <p className="partner-intro">What brings you to Kansas City? Choose where you’d like to start.</p>
     <div className="editor-grid">
       <article className="editor-card"><h2>I’m settling in</h2><p>Tell the New2KC team about your move and the local connections you’re looking for.</p><a href="#welcome">Start the welcome questionnaire</a></article>
-      <article className="editor-card"><h2>I’m exploring a career move</h2><p>Create a private talent profile or browse Kansas City employers and roles.</p><Link href="/portal?view=profile">Start my private profile</Link><p><Link href="/">Browse opportunities</Link></p></article>
+      <article className="editor-card"><h2>I’m exploring a career move</h2><p>Create a private talent profile or browse Kansas City employers and roles.</p><Link href="/portal?view=profile">Start my private profile</Link><p><Link href="/marketplace">Browse opportunities</Link></p></article>
       <article className="editor-card"><h2>I’m getting to know KC</h2><p>Explore the region at your own pace with New2KC.</p><a href={tenant.communityUrl}>Open New2KC Explorer</a></article>
     </div>
   </section><section className="editor-section" id="welcome">
