@@ -14,7 +14,7 @@ export default function SiteHeader({config=tenant}:{config?:TenantConfig}){
     ['Home',home],['Marketplace',demo?'/demo':'/marketplace'],
     ...(config.welcomeFormUrl&&!demo?[[config.communityName,config.communityUrl]]:[]),
     ['Founding partners',demo?'/demo/partners':'/partners'],
-    ...(!demo?[['Corporate Talent Partners','/corporate-partners']]:[]),
+    ...(!demo?[['Regional Intelligence','/regional-intelligence'],['Corporate Talent Partners','/corporate-partners']]:[]),
     [demo?'KC Now concept':'My workspace',demo?'/demo/kcnow':'/partnerships']
   ];
   useEffect(()=>{
