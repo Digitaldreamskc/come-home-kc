@@ -34,6 +34,12 @@ export async function save(form:FormData){
   if(!metric)redirect(dest+'?status=unavailable');
   command.metric=metric;
  }
+ if(operation==='ecosystem-review'){
+ const rationale=String(values.rationale||'').trim();
+ if(!rationale||rationale.length>1000)redirect(await workspaceReturn('unavailable'));
+ const {error}=await db.rpc('queue_ecosystem_provider_review',{case_id:values.case,provider_id:values.provider,rationale});
+ revalidatePath('/partnerships');revalidatePath('/admin');redirect(await workspaceReturn(error?'unavailable':'saved'));
+ }
  if(operation==='atlas-review'){
   const provider=(await atlasProviders().catch(()=>[])).find(p=>p.link_id===values.provider);
   const rationale=String(values.rationale||'').trim();
