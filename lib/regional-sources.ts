@@ -25,3 +25,6 @@ export async function approvedResources(){
  if(!r.ok) throw Error('Directory unavailable');
  return await r.json() as {id:string;name:string;company:string;area:string;website:string}[];
 }
+
+export type CapitalProfile={entity_id:string;website:string;type:string;focus:string|null;stage:string|null;sector:string|null;check:string|null;source_url:string;updated_at:string};
+export async function capitalProfiles():Promise<CapitalProfile[]>{const r=await fetch(atlasURL+'/rest/v1/rpc/kc_capital_provider_profiles',{method:'POST',headers:{apikey:atlasKey,'Content-Type':'application/json'},body:'{}',cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Capital profiles unavailable');const data=await r.json();if(!Array.isArray(data))throw Error('Invalid profile response');return data;}
