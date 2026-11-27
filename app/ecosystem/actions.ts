@@ -1,4 +1,5 @@
 'use server';
+import {workspaceReturn} from '@/lib/workspace-return';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { session } from '@/lib/supabase';
@@ -28,16 +29,16 @@ export async function save(form:FormData){
  }
  if(operation==='strategy'){
   const {error}=await db.rpc('review_partner_strategy',{agreement:values.agreement,priorities:values.priorities,plan:values.plan,renewal:values.renewal});
-  revalidatePath('/partnerships');redirect(dest+'?status='+(error?'unavailable':'saved'));
+  revalidatePath('/partnerships');redirect(dest==='/partnerships'?await workspaceReturn(error?'unavailable':'saved'):dest+'?status='+(error?'unavailable':'saved'));
  }
  if(operation==='directory'){
   const sources=await approvedResources();
   if(!sources.some(x=>String(x.id)===String(values.listing)))redirect(dest+'?status=unavailable');
   const {error}=await db.rpc('recommend_directory_resource',{case_id:values.case,listing:values.listing});
-  revalidatePath('/partnerships');redirect(dest+'?status='+(error?'unavailable':'saved'));
+  revalidatePath('/partnerships');redirect(dest==='/partnerships'?await workspaceReturn(error?'unavailable':'saved'):dest+'?status='+(error?'unavailable':'saved'));
  }
  const {error}=await db.rpc(isCase?'partner_case_action':'configure_partner',{command});
- if(error)redirect(dest+'?status=unavailable');
+ if(error)redirect(dest==='/partnerships'?await workspaceReturn('unavailable'):dest+'?status=unavailable');
  revalidatePath('/partnerships');revalidatePath('/ecosystem');revalidatePath('/employers/[id]','page');
- redirect(dest+'?status=saved');
+ redirect(dest==='/partnerships'?await workspaceReturn('saved'):dest+'?status=saved');
 }

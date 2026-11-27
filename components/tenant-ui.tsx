@@ -3,7 +3,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { TenantConfig } from '@/lib/tenant-config';
 
-export function BrandIdentity({config,homeHref='/'}:{config:TenantConfig;homeHref?:string}) {
+const heart="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 58'%3E%3Cpath fill='%2300aeef' d='M32 56 6 31C-9 16 10-8 27 7l5 5 5-5c17-15 36 9 21 24Z'/%3E%3C/svg%3E";
+export function BrandIdentity({config,homeHref='/',heartColor='#00aeef'}:{config:TenantConfig;homeHref?:string;heartColor?:string}) {
+ if(config.product==='Come Home KC')return <Link href={homeHref} className="wordmark wordmark-heart" aria-label="Come Home KC home"><span className="wordmark-line">COME HOME <span className="wordmark-kc" role="img" aria-label="KC heart" style={{backgroundImage:`url("${heart.replace('%2300aeef',encodeURIComponent(heartColor))}")`}}>KC</span></span><small>BY BACK2KC + NEW2KC</small></Link>;
  return <Link href={homeHref} className="wordmark" aria-label={config.product+' home'}>{config.logo&&<Image src={config.logo} alt={config.name} width={120} height={96} unoptimized loading="eager"/>}<span className="product-title">{config.product}</span></Link>;
 }
 
