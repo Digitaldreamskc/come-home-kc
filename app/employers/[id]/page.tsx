@@ -1,3 +1,4 @@
+import {tenant} from '@/lib/tenant-config';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { publicDb } from '@/lib/supabase';
@@ -26,5 +27,5 @@ export default async function Profile({params,searchParams}:{params:Promise<{id:
  <section className="editor-section"><h2>Employer stories</h2>{!stories.data?.length&&<p>No stories published yet.</p>}{stories.data?.map(s=><article className="story-column" key={s.id} id={s.id}><p className="partner-eyebrow">{s.series}</p><h3>{s.title}</h3><p>{s.body}</p><a href="#opportunities">Explore opportunities at this employer</a></article>)}
  </section><section className="editor-section" id="opportunities"><h2>Career opportunities</h2>{!jobs.data?.length&&<p>No current roles listed.</p>}{jobs.data?.map(j=><section className="editor-card" key={j.id}><h3><Link href={'/jobs/'+j.id}>{j.title}</Link></h3>{entries.filter(e=>e.job===j.id).map(request)}</section>)}
  </section><section className="editor-section" id="experiences"><h2>Inside KC experiences</h2>{!events.data?.length&&<p>No experiences listed.</p>}{events.data?.map(e=><p key={e.id}>{e.title} · {e.starts_at.slice(0,10)} · {e.location} {e.registration_url?.startsWith('https://')&&<a href={e.registration_url}>Registration details</a>}</p>)}
- </section><section className="editor-section"><h2>Newcomer welcome</h2><a href="https://socialbalances.com/new2kc">Explore New2KC</a>{entries.filter(e=>e.pillar==='New2KC welcome').map(request)}<Link href="/partnerships">My follow-ups</Link></section></EditorialPage>;
+ </section><section className="editor-section"><h2>Newcomer welcome</h2><a href={tenant.communityUrl}>Explore {tenant.communityName}</a>{entries.filter(e=>e.pillar==='New2KC welcome').map(request)}<Link href="/partnerships">My follow-ups</Link></section></EditorialPage>;
 }

@@ -10,7 +10,7 @@ export type RegionalEvent = { id: string; title: string; description?: string | 
 export type Catalog = { organizations: Organization[]; jobs: Job[]; resources: Resource[]; events: RegionalEvent[] };
 export type Filters = { region: Region; category: Category; query: string; industry: string; workMode: WorkMode; city: string; employment?:string; experience?:string };
 export const DEFAULT_FILTERS: Filters = { region: 'all', category: 'talent', query: '', industry: '', workMode: 'all', city: '' };
-export const NEW2KC_INTAKE = tenant.communityUrl;
+export const NEW2KC_INTAKE = tenant.welcomeFormUrl ? '/get-connected' : tenant.communityUrl;
 export const REGION_LABELS: Record<string,string> = Object.fromEntries(tenant.geography.map(r=>[r.key,r.label]));
 export function safeExternalUrl(value?: string | null): string | null { if (!value) return null; try { const u = new URL(value); return ['https:', 'http:'].includes(u.protocol) ? u.href : null; } catch { return null; } }
 export function parseFilters(search: string, rememberedRegion?: string | null, allowed=regionKeys): Filters {
