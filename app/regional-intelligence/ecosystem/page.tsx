@@ -1,7 +1,5 @@
 import Link from 'next/link';
 import {EditorialPage} from '@/components/editorial';
-import {directoryEntries} from '@/lib/atlas-discovery';
-import DiscoveryDirectory from '../discovery-directory';
+import EcosystemDirectory from './ecosystem-directory';
 import '../intelligence.css';
-export const dynamic='force-dynamic';
-export default async function Page(){const entries=await directoryEntries('ecosystem').catch(()=>null);return <EditorialPage><section className="atlas-directory-hero"><Link href="/regional-intelligence">Regional intelligence</Link><p className="partner-eyebrow">KC Capital Atlas · Entrepreneurial ecosystem</p><h1>Find your way through the entrepreneurial ecosystem</h1><p>Explore regional founder support, accelerators, mentoring, coworking and economic development organizations. Verify current program availability with the provider.</p></section>{entries?<DiscoveryDirectory entries={entries} kind="ecosystem"/>:<p role="alert">Atlas data unavailable. <a href="/atlas">Visit the full Atlas.</a></p>}</EditorialPage>;}
+export default function Page(){return <EditorialPage><section className="atlas-directory-hero"><Link href="/regional-intelligence">Regional intelligence</Link><p className="partner-eyebrow">Entrepreneurial ecosystem</p><h1>Build your business in Kansas City.</h1><p>Find the organizations and programs that can help you start, build or grow a business.</p></section><EcosystemDirectory/></EditorialPage>;}
