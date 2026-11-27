@@ -1,12 +1,11 @@
+import ActivationWizard from './activation-wizard';
 import { save } from '../ecosystem/actions';
 import { regionalResearch } from '@/lib/regional-sources';
 export const pillars=['Talent strategy','Career opportunities','Employer storytelling','Inside KC experiences','New2KC welcome','Regional intelligence','Partner recognition'];
 const series=['The Work Happening Here','Why I Chose KC','Meet the Leadership','Careers You Didn’t Know Existed'];
 function field(name:string,label:string,type='text'){return <label>{label}<input name={name} type={type} required/></label>}
 function hidden(name:string,value:string){return <input type="hidden" name={name} value={value}/>}
-export function AgreementForm({orgs}:{orgs:{id:string;name:string}[]}){return <details><summary>Onboard employer partner</summary><form action={save}>
- {hidden('operation','agreement')}<a href="/admin?section=organizations">Create and verify an employer in the staff workspace</a><label>Verified employer<select required name="organization"><option value="">Select employer</option>{orgs.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
- {field('entity','Contracting entity')}{field('start','Term start','date')}{field('end','Term end','date')}{field('value','Agreement amount','number')}{field('scope','Approved scope')}{field('priorities','Hiring priorities')}{field('plan','Activation plan')}{field('reviews','Quarterly review dates (YYYY-MM-DD, comma-separated)')}<button>Create agreement</button></form></details>}
+export function AgreementForm({orgs}:{orgs:{id:string;name:string}[]}){return <ActivationWizard orgs={orgs}/>;}
 export async function Manage({agreement,commitments,jobs,events}:{agreement:string;jobs:{id:string;title:string}[];events:{id:string;title:string}[];commitments:{id:string;pillar:string;deliverable:string}[]}){
  const metrics=await regionalResearch().catch(()=>null);
  const choose=(pillar?:string)=><label>Contractual commitment<select required name="commitment">{commitments.filter(c=>!pillar||c.pillar===pillar).map(c=><option key={c.id} value={c.id}>{c.deliverable}</option>)}</select></label>;
