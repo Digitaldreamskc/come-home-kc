@@ -12,6 +12,13 @@ export async function save(form:FormData){
  const dest=values.from==='profile' && /^[0-9a-f-]{36}$/.test(profile)?'/employers/'+profile:'/partnerships';
  const {user,db}=await session();
  if(!user)redirect('/login?next='+encodeURIComponent(dest));
+ if(operation==='activate'){
+  let commitments:unknown;try{commitments=JSON.parse(String(values.commitments));}catch{redirect(await workspaceReturn('unavailable'));}
+  const {data,error}=await db.rpc('activate_partner',{command:{...values,commitments}});
+  if(error||typeof data!=='string')redirect(await workspaceReturn('unavailable'));
+  revalidatePath('/partnerships');revalidatePath('/admin');
+  redirect('/partnerships?view=overview&agreement='+encodeURIComponent(data)+'&status=saved');
+ }
  if(operation==='welcome'){
   const {error}=await db.rpc('enroll_tenant');
   if(error)redirect(dest+'?status=unavailable');
