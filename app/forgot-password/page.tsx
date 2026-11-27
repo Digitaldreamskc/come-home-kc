@@ -5,7 +5,7 @@ import {useState} from 'react';
 import {createBrowserClient} from '@supabase/ssr';
 export default function ForgotPassword(){const hydrated=useHydrated();
  const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
- async function submit(e:React.FormEvent<HTMLFormElement>){e.preventDefault();setBusy(true);setMessage('');const email=String(new FormData(e.currentTarget).get('email')).trim();try{
+ async function submit(e:React.FormEvent<HTMLFormElement>){e.preventDefault();setBusy(true);setMessage('');const email=String(new FormData(e.currentTarget).get('email')).trim().toLowerCase();if(process.env.NEXT_PUBLIC_SUPABASE_URL==='https://kxuvmilbvwwcrxiqnftx.supabase.co'&&!['mary@socialbalances.com','jessica@socialbalances.com'].includes(email)){setMessage('Password recovery in this review is reserved for authorized staff.');setBusy(false);return;}try{
   const db=createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
   const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/auth/callback?next=/reset-password'});
   if(error){setMessage(error.status===429?'Please wait a few minutes before requesting another reset.':'We could not send a reset email. Please try again or contact the team.');return;}
