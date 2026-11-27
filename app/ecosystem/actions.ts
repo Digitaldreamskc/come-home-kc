@@ -11,6 +11,10 @@ export async function save(form:FormData){
  const dest=values.from==='profile' && /^[0-9a-f-]{36}$/.test(profile)?'/employers/'+profile:'/partnerships';
  const {user,db}=await session();
  if(!user)redirect('/login?next='+encodeURIComponent(dest));
+ if(operation==='welcome'){
+  const {error}=await db.rpc('enroll_tenant');
+  if(error)redirect(dest+'?status=unavailable');
+ }
  if(operation==='interest'){
   const {data:profile,error}=await db.from('candidate_profiles').select('user_id').eq('user_id',user.id).maybeSingle();
   if(!error&&!profile)redirect(dest+'?status=profile');

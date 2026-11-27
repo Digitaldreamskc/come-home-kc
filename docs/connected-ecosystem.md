@@ -27,3 +27,13 @@ Jessica starts in Come Home KC’s existing `/admin`. Its verification controls 
 ## Forms validation configuration
 
 Use the approved isolated validation database. Supply a short-lived server-only Google access token with Forms metadata and response read scopes through the preview environment, and set `NEW2KC_VALIDATION_RESPONSE_ID` to the specific synthetic response cleared by the form owner. The token variable is `NEW2KC_FORMS_READ_TOKEN`. The importer requests one response by ID. It does not list responses, retrieve a CRM export, or infer personal follow-up consent. Expired credentials fail closed. A future recurring integration requires separate ownership, authentication and retention decisions.
+
+## Browser validation on November 26, 2026
+
+Separate Chromium sessions represented the public visitor, a professional, a staff administrator with introduction-review scope, and a verified representative. The browser ran the Next.js application against real Supabase Auth and PostgreSQL in the isolated validation project. The hosted deployment was checked separately with its existing protection enabled.
+
+Staff created West Bottoms Signal Works (fictional) using the existing employer directory. Staff separately verified representative membership, published the calibration-engineer listing and scheduled the welcome visit. From the partnership interface, staff then created the $30,000 agreement, configured its seven commitments, published the workshop story and linked the opportunity, event, recognition and Atlas research. The public visitor navigated from discovery to the employer profile and role.
+
+The participant created a private profile, authorized sharing role interest with this employer and separately requested private welcome follow-up. Staff reviewed both requests. The employer accepted the introduction. Staff recommended the scheduled gathering on the welcome case. The participant reported a completed meeting and a community connection. The database preserved both outcomes as **Reported**, closed the original introduction request and marked both follow-up tasks done. A community connection is not evidence of event attendance. The employer-hosted experience remains scheduled.
+
+Rollback-only database checks exercised source-response replay, the original email permission boundary, staff-only import, private case isolation, revocation and wrong-tenant access. External Forms authorization and a synthetic source response remain outstanding. The direct welcome flow is independently functional.
