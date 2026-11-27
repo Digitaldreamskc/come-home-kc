@@ -1,6 +1,7 @@
 import { AgreementForm,Manage } from './configure';
 import { importIntake } from './intake';
 import Cases from './cases';
+import IntelligenceWorkspace from './intelligence';
 import {workspaceReturn} from '@/lib/workspace-return';
 import SiteHeader from '@/components/site-header';
 import '@/app/connected.css';
@@ -31,7 +32,7 @@ export default async function Partnerships({searchParams}:{searchParams:Promise<
   const staff=data?.staff===true;
   const agreements:Agreement[]=data?.agreements||[];
   const a=agreements.find(x=>x.id===query.agreement)||agreements[0];
-  const views=staff?['Overview','Follow-ups','Fulfillment','Publishing','Reports','Intake','Onboarding']:a?['Overview','Follow-ups','Fulfillment','Reports']:['Follow-ups'];
+  const views=staff?['Overview','Follow-ups','Fulfillment','Publishing','Reports','Intelligence','Intake','Onboarding']:a?['Overview','Follow-ups','Fulfillment','Reports']:['Follow-ups'];
   const view=views.find(v=>v.toLowerCase()===query.view)||views[0];
   function href(v:string,id=a?.id){const params=new URLSearchParams({view:v.toLowerCase()});if(id)params.set('agreement',id);return '/partnerships?'+params;}
   const [queue,events,orgs,jobs,publication]=await Promise.all([
@@ -77,6 +78,7 @@ export default async function Partnerships({searchParams}:{searchParams:Promise<
 </>}
   </section>}
   {view==='Follow-ups'&&(queue.error?<p role="alert">Follow-up queue unavailable.</p>:<Cases cases={a?cases.filter((x:{organization:string})=>x.organization===pub?.organization):cases} events={events.data||[]}/>)}
+  {staff&&view==='Intelligence'&&<IntelligenceWorkspace agreement={a?.id} commitments={a?.commitments||[]} query={query.q}/>}
   {staff&&view==='Onboarding'&&<AgreementForm orgs={orgs.data||[]}/>}
   {staff&&view==='Intake'&&<section><h2>Newcomer intake</h2><p>Review source permissions before individual follow-up.</p><p><Link href="/admin?section=submissions">Review intake</Link> · <Link href="/admin?section=tasks">Open staff tasks</Link></p><details><summary>Import from Google Forms</summary><form action={importIntake}><button>Import authorized Google Form response</button></form></details></section>}
   {!a&&!error&&view==='Overview'&&<p>No agreements have been assigned.</p>}</div></div></main></>;
