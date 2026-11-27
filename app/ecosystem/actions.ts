@@ -3,7 +3,7 @@ import {workspaceReturn} from '@/lib/workspace-return';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { session } from '@/lib/supabase';
-import { regionalResearch, approvedResources } from '@/lib/regional-sources';
+import { regionalResearch, approvedResources, atlasProviders } from '@/lib/regional-sources';
 
 export async function save(form:FormData){
  const values=Object.fromEntries(form.entries());
@@ -33,6 +33,14 @@ export async function save(form:FormData){
   const metric=(await regionalResearch()).find(x=>x.metric_id===values.metric);
   if(!metric)redirect(dest+'?status=unavailable');
   command.metric=metric;
+ }
+ if(operation==='atlas-review'){
+  const provider=(await atlasProviders().catch(()=>[])).find(p=>p.link_id===values.provider);
+  const rationale=String(values.rationale||'').trim();
+  if(!provider||!rationale||rationale.length>1000)redirect(await workspaceReturn('unavailable'));
+  const {error}=await db.rpc('queue_atlas_provider_review',{case_id:values.case,provider_id:provider.link_id,provider_name:provider.listed_name,provider_url:provider.profile_url,rationale});
+  revalidatePath('/partnerships');revalidatePath('/admin');
+  redirect(await workspaceReturn(error?'unavailable':'saved'));
  }
  if(operation==='strategy'){
   const {error}=await db.rpc('review_partner_strategy',{agreement:values.agreement,priorities:values.priorities,plan:values.plan,renewal:values.renewal});
