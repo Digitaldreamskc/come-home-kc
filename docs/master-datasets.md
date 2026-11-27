@@ -1,0 +1,7 @@
+# Master datasets
+
+Capital provider discovery profiles live in `kc_atlas.capital_provider_profiles`, keyed by existing Atlas entity ID. The read-only `kc_capital_provider_profiles()` projection supplies the Capital Landscape. The underlying research projection remains separate and unchanged; profile presence is not evidence of current investment availability. Imported criteria retain website provenance and require periodic verification.
+
+Entrepreneurial support profiles live in `public.ecosystem_providers` in Come Home KC, with tenant-scoped RLS and staff editing. Public reads select published records only. The 17 initial records were migrated from the previous code-based directory. Do not maintain a second runtime seed. Existing newsletter listings remain in resources/events; canonical crosslinks and organization deduplication across domains remain future work.
+
+Staff Intelligence searches published capital profiles, ecosystem profiles, Jessica's List, and Atlas observations. Existing case review tasks link to canonical support IDs; external introductions require human permission and review. The Atlas legacy provider case review still uses its curated Resource Navigator crosslinks. Application approval-to-publication and notification delivery are not implemented by this migration. Do not enable public registration or email delivery in validation. The Atlas and 2KC database migrations must be applied to their respective environments before deploying this code. No private contact data is copied across projects.
