@@ -35,3 +35,5 @@
 .resource-deadlines time{font-size:12px;min-width:48px;font-weight:700}
 .resource-deadlines a{text-underline-offset:3px}
 @media(max-width:700px){.resource-card-grid{grid-template-columns:minmax(0,1fr)}.resource-results.list .resource-entry{display:flex;gap:8px}.resource-results.list .resource-entry-actions{align-self:stretch;justify-content:flex-start}.resource-entry{padding:16px}.resource-group-heading{font-size:21px}}
+
+.atlas-marketplace-link{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;border:1px solid var(--line,#ddd);border-radius:12px;background:var(--paper,#fffefb);margin:0 0 20px}.atlas-marketplace-link a{font-size:13px;font-weight:700;text-underline-offset:3px}.atlas-marketplace-link p{font-size:13px;color:var(--muted)}
