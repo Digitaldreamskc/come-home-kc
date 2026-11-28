@@ -1,6 +1,11 @@
 import { AgreementForm,Manage } from './configure';
 import { importIntake } from './intake';
-import Cases from './cases';
+import Cases, { type Case } from './cases';
+import PartnershipCalendar from './partnership-calendar';
+import './partnership-calendar.css';
+import { calendarDay, formatPartnershipDate, partnershipDate, type PartnershipCalendarEntry } from '@/lib/partnership-calendar';
+import { type ProviderFollowup } from '@/lib/provider-followups';
+import { jobIdPattern } from '@/lib/onboarding';
 import IntelligenceWorkspace from './intelligence';
 import {workspaceReturn} from '@/lib/workspace-return';
 import SiteHeader from '@/components/site-header';
@@ -26,42 +31,84 @@ async function recordDelivery(form:FormData) {
 
 export default async function Partnerships({searchParams}:{searchParams:Promise<{status?:string;view?:string;agreement?:string;q?:string;stage?:string;sector?:string|string[]}>}) {
   if (!configured()) return <main className="work-room"><h1>Partnership workspace unavailable</h1></main>;
-  const {db,user} = await session();
-  if (!user) redirect('/login?next=/partnerships');
-  const {data,error} = await db.rpc('partner_workspace');
   const query=await searchParams;
+  const {db,user} = await session();
+  if (!user) {
+    const next = new URLSearchParams();
+    if (query.view === 'calendar') {
+      next.set('view', 'calendar');
+      if (query.agreement && jobIdPattern.test(query.agreement)) next.set('agreement', query.agreement);
+    }
+    redirect('/login?next=' + encodeURIComponent('/partnerships' + (next.size ? '?' + next : '')));
+  }
+  const {data,error} = await db.rpc('partner_workspace');
   const staff=data?.staff===true;
   const agreements:Agreement[]=data?.agreements||[];
   const a=agreements.find(x=>x.id===query.agreement)||agreements[0];
-  const views=staff?['Overview','Follow-ups','Fulfillment','Publishing','Reports','Intelligence','Intake','Onboarding']:a?['Overview','Follow-ups','Fulfillment','Reports']:['Follow-ups'];
+  const calendarView = a ? ['Calendar'] : [];
+  const views=staff?['Overview',...calendarView,'Follow-ups','Fulfillment','Publishing','Reports','Intelligence','Intake','Onboarding']:a?['Overview',...calendarView,'Follow-ups','Fulfillment','Reports']:['Follow-ups'];
   const view=views.find(v=>v.toLowerCase()===query.view)||views[0];
   function href(v:string,id=a?.id){const params=new URLSearchParams({view:v.toLowerCase()});if(id)params.set('agreement',id);return '/partnerships?'+params;}
-  const [queue,events,orgs,jobs,publication]=await Promise.all([
+  const showCalendar = view === 'Overview' || view === 'Calendar';
+  const [queue,events,orgs,jobs,publication,onboardingTasks]=await Promise.all([
     db.rpc('partner_case_queue'),db.from('events').select('id,title,host_organization_id,starts_at').eq('status','published'),
     view==='Onboarding'&&staff?db.from('organizations').select('id,name').eq('verification_status','verified'):Promise.resolve({data:[]}),
     db.from('job_postings').select('id,title,organization_id').eq('status','active'),
-    a?db.rpc('partner_publications',{agreement:a.id}):Promise.resolve({data:null,error:null})]);
-  const onboardingTasks=staff&&a?await db.from('tasks').select('id,action,owner,due_date,status').contains('source_record',{agreement_id:a.id}).order('due_date'):null;
+    a?db.rpc('partner_publications',{agreement:a.id}):Promise.resolve({data:null,error:null}),
+    staff&&a&&showCalendar?db.from('tasks').select('id,action,owner,due_date,status').contains('source_record',{agreement_id:a.id}).order('due_date'):null
+  ]);
   const pub=publication.data;
   const activeJobs=(jobs.data||[]).filter(x=>x.organization_id===pub?.organization);
   const activeEvents=(events.data||[]).filter(x=>x.host_organization_id===pub?.organization);
   const approved=a?.commitments.filter(c=>c.state==='approved').length||0;
-  const cases=queue.data||[];
+  const cases: Case[] = queue.data || [];
+  const staffCaseIds = staff && a && showCalendar && pub?.organization ? cases
+    .filter(item => item.staff && item.organization === pub.organization && !['withdrawn','reported'].includes(item.state))
+    .map(item => item.id) : [];
+  const followups = staffCaseIds.length ?
+    await db.rpc('case_provider_workspace', { case_ids: staffCaseIds }) : null;
+  const plans = (followups?.data?.followups ?? []) as ProviderFollowup[];
+  const today = partnershipDate(new Date());
+  const initialDate = a && calendarDay(a.termStart) && (today < a.termStart || today > a.termEnd) ? a.termStart : today;
+  const calendarEntries: PartnershipCalendarEntry[] = a && showCalendar ? [
+    { id: 'start', date: a.termStart, title: 'Partnership begins', kind: 'Agreement' },
+    { id: 'end', date: a.termEnd, title: 'Partnership term ends', kind: 'Agreement' },
+    ...[...new Set(a.reviews)].map(date => ({
+      id: 'review-' + date, date, title: 'Partnership review', kind: 'Review' as const,
+    })),
+    ...a.commitments.map(item => ({
+      id: item.id, date: item.due, title: item.deliverable, kind: 'Commitment' as const,
+    })),
+    ...activeEvents.map(item => ({
+      id: item.id, date: partnershipDate(item.starts_at), title: item.title, kind: 'Inside KC' as const, startsAt: item.starts_at,
+    })),
+    ...(onboardingTasks?.data ?? []).filter(task => task.due_date && task.status !== 'Cancelled').map(task => ({
+      id: task.id, date: task.due_date, title: task.action, kind: 'Team task' as const,
+    })),
+    ...plans.filter(plan => plan.stage !== 'confirmed_outcome').map(plan => ({
+      id: plan.id, date: plan.due_on, title: plan.next_action, kind: 'Follow-up' as const,
+    })),
+  ] : [];
   return <><SiteHeader/><main className="work-room"><div className="work-heading"><p className="eyebrow">{staff?'2KC team workspace':a?'Employer partner workspace':'Participant workspace'}</p><h1>{staff?'Partner operations':a?.employer||'Your connections'}</h1>
-  {a&&<p>{a.synthetic?'Validation agreement · ':''}{new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(a.value)} annual partnership · {a.termStart} to {a.termEnd}</p>}</div>
+  {a&&<p>{a.synthetic?'Validation agreement · ':''}{new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(a.value)} annual partnership · {formatPartnershipDate(a.termStart)} to {formatPartnershipDate(a.termEnd)}</p>}</div>
   <div className="work-layout"><aside><nav className="work-nav" aria-label="Workspace sections">{views.map(v=><Link aria-current={view===v?'page':undefined} key={v} href={href(v)}>{v}</Link>)}<Link href={staff?'/admin':'/portal'}>{staff?'Team records':'My account'}</Link></nav></aside>
   <div className="work-panel">{query.status&&<p role="status">{query.status==='saved'?'Saved.':query.status==='intake-access'?'Forms read access and an authorized synthetic response ID are required.':'The record could not be updated. Check the current status and try again.'}</p>}
   {(error||publication.error)&&<p role="alert">Partnership records could not be loaded.</p>}
   {agreements.length>1&&<form className="agreement-picker"><input type="hidden" name="view" value={view.toLowerCase()}/><label>Employer partnership<select name="agreement" defaultValue={a?.id}>{agreements.map(x=><option key={x.id} value={x.id}>{x.employer}</option>)}</select></label><button>Open agreement</button></form>}
   {a&&<section><h2>{staff?a.employer:view==='Overview'?'Partnership overview':view}</h2>
-  {view==='Overview'&&<>{staff&&onboardingTasks&&<section><h3>Internal activation checklist</h3>{onboardingTasks.error?<p>Could not load activation tasks.</p>:<><p>{(onboardingTasks.data||[]).filter(t=>t.status==='Done').length} / {(onboardingTasks.data||[]).length} tasks complete</p><ul>{(onboardingTasks.data||[]).map(t=><li key={t.id}>{t.action} · {t.owner} · {t.due_date} · {t.status}</li>)}</ul><Link href="/admin?section=tasks">Manage internal tasks</Link></>}</section>}<div className="work-metrics"><Link href={href('Fulfillment')}><strong>{approved} / {a.commitments.length}</strong><span>Commitments approved</span></Link><Link href={href('Reports')}><strong>{pub?.reports.length||0}</strong><span>Approved reports</span></Link><Link href={href('Follow-ups')}><strong>{cases.filter((x:{state:string;organization:string})=>x.organization===pub?.organization&&!['withdrawn','reported'].includes(x.state)).length}</strong><span>Open follow-ups</span></Link></div>
+  {view==='Overview'&&<>{staff&&onboardingTasks&&<section><h3>Internal activation checklist</h3>{onboardingTasks.error?<p>Could not load activation tasks.</p>:<><p>{(onboardingTasks.data||[]).filter(t=>t.status==='Done').length} / {(onboardingTasks.data||[]).length} tasks complete</p><ul>{(onboardingTasks.data||[]).map(t=><li key={t.id}>{t.action} · {t.owner} · {t.due_date && <>{formatPartnershipDate(t.due_date)} · </>}{t.status}</li>)}</ul><Link href="/admin?section=tasks">Manage internal tasks</Link></>}</section>}<div className="work-metrics"><Link href={href('Fulfillment')}><strong>{approved} / {a.commitments.length}</strong><span>Commitments approved</span></Link><Link href={href('Reports')}><strong>{pub?.reports.length||0}</strong><span>Approved reports</span></Link><Link href={href('Follow-ups')}><strong>{cases.filter((x:{state:string;organization:string})=>x.organization===pub?.organization&&!['withdrawn','reported'].includes(x.state)).length}</strong><span>Open follow-ups</span></Link></div>
   <h3>Activation plan</h3><p>{a.plan}</p><h3>Hiring priorities</h3><p>{a.priorities.join(', ')||'No priorities recorded.'}</p>
-  <div className="work-pair"><section><h3>Published roles</h3>{activeJobs.length?activeJobs.map(j=><p key={j.id}><Link href={'/jobs/'+j.id}>{j.title}</Link></p>):<p>No current roles.</p>}</section><section><h3>Inside KC experiences</h3>{activeEvents.length?activeEvents.map(e=><p key={e.id}>{e.title} · {e.starts_at.slice(0,10)}</p>):<p>No published experiences.</p>}</section></div>
+  <div className="work-pair"><section><h3>Published roles</h3>{activeJobs.length?activeJobs.map(j=><p key={j.id}><Link href={'/jobs/'+j.id}>{j.title}</Link></p>):<p>No current roles.</p>}</section><section><h3>Inside KC experiences</h3>{activeEvents.length?activeEvents.map(e=><p key={e.id}>{e.title} · {formatPartnershipDate(partnershipDate(e.starts_at))}</p>):<p>No published experiences.</p>}</section></div>
   {pub&&<Link className="button primary" href={'/employers/'+pub.organization}>Employer profile and stories</Link>}
-  <h3>Reviews and renewal</h3><p>{a.reviews.join(' · ')||'No reviews scheduled.'} · {a.renewal}</p></>}
+  </>}
+  {showCalendar && <>
+    {(onboardingTasks?.error || followups?.error || events.error) && <p role="alert">Some calendar items could not be loaded.</p>}
+    <PartnershipCalendar key={a.id + view} entries={calendarEntries} initialDate={initialDate}
+      today={today} renewal={a.renewal} initiallyExpanded={view === 'Calendar'}/>
+  </>}
   {view==='Fulfillment'&&<><form className="agreement-picker"><input type="hidden" name="view" value="fulfillment"/><input type="hidden" name="agreement" value={a.id}/><label>Search commitments<input name="q" defaultValue={query.q}/></label><label>Delivery status<select name="stage" defaultValue={query.stage||''}><option value="">All statuses</option>{['scheduled','submitted','approved'].map(x=><option key={x}>{x}</option>)}</select></label><button>Filter</button></form>
         <h3>Partnership commitments</h3>
-        <ul>{a.commitments.filter(c=>(!query.stage||c.state===query.stage)&&(!query.q||(c.pillar+' '+c.deliverable).toLowerCase().includes(query.q.toLowerCase()))).map(c=><li key={c.id}><strong>{c.pillar}</strong><p>{c.deliverable} · Due {c.due} · {c.state}</p>
+        <ul>{a.commitments.filter(c=>(!query.stage||c.state===query.stage)&&(!query.q||(c.pillar+' '+c.deliverable).toLowerCase().includes(query.q.toLowerCase()))).map(c=><li key={c.id}><strong>{c.pillar}</strong><p>{c.deliverable} · Due {formatPartnershipDate(c.due)} · {c.state}</p>
           {data.staff && <><p>Owner · {c.owner}</p>{c.evidence && <p>Internal evidence · {c.evidence}</p>}
           {c.state!=='approved' && <form action={recordDelivery}>
             <input type="hidden" name="commitment" value={c.id}/>
@@ -73,7 +120,7 @@ export default async function Partnerships({searchParams}:{searchParams:Promise<
   {staff&&view==='Publishing'&&<Manage agreement={a.id} commitments={a.commitments} jobs={activeJobs} events={activeEvents}/>}
   {view==='Reports'&&pub&&<>        <h3>Approved period reports</h3>
         {pub.reports.length===0 && <p>No reports have been approved.</p>}
-        {pub.reports.map((r:{start:string;end:string;snapshot:{deliveries:{deliverable:string;pillar:string}[];research:{metric_id:string;entity:string;definition:string;as_of:string;value:number;unit:string;source_url:string}[];attribution:string}})=><section key={r.start+r.end}><h4>{r.start} through {r.end}</h4><p>{r.snapshot.attribution}</p>
+        {pub.reports.map((r:{start:string;end:string;snapshot:{deliveries:{deliverable:string;pillar:string}[];research:{metric_id:string;entity:string;definition:string;as_of:string;value:number;unit:string;source_url:string}[];attribution:string}})=><section key={r.start+r.end}><h4>{formatPartnershipDate(r.start)} through {formatPartnershipDate(r.end)}</h4><p>{r.snapshot.attribution}</p>
         <ul>{r.snapshot.deliveries.map((d,i)=><li key={i}>{d.pillar} · {d.deliverable}</li>)}</ul>
         {r.snapshot.research.length>0 && <p>Regional context from KC Capital Atlas. Each observation applies to the named entity and source period. These metrics do not measure hiring, newcomer activity or partner impact.</p>}{r.snapshot.research.map(m=><p key={m.metric_id}>{m.entity} · {m.value.toLocaleString()} {m.unit} · {m.as_of}. {m.definition} <a href={m.source_url}>Atlas source</a></p>)}</section>)}
 </>}

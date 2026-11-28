@@ -1,3 +1,4 @@
+import { formatPartnershipDate, partnershipDate } from '@/lib/partnership-calendar';
 import { approvedResources,capitalProfiles } from '@/lib/regional-sources';
 import {ecosystemProviders} from '@/lib/ecosystem-providers';
 import { session } from '@/lib/supabase';
@@ -29,10 +30,10 @@ export default async function Cases({cases,events}:{cases:Case[];events:{id:stri
  {(capital===null||support===null)&&<p role="alert">One or more provider directories are unavailable.</p>}
  {plans.filter(plan=>plan.case_id===c.id).map(plan=><article key={plan.id}>
    <h4>{providers.find(p=>p.dataset===plan.dataset&&p.id===plan.provider_id)?.name ?? plan.provider_id}</h4>
-   <p>{statusLabel(plan.stage)} · {owners.find(owner=>owner.id===plan.owner_id)?.label ?? 'Unassigned'} · Due {plan.due_on}</p>
+   <p>{statusLabel(plan.stage)} · {owners.find(owner=>owner.id===plan.owner_id)?.label ?? 'Unassigned'} · Due {formatPartnershipDate(plan.due_on)}</p>
    <p>{plan.rationale}</p><p>{plan.next_action}</p>
-   <p><a href={plan.source_url}>Source evidence</a> · Checked {plan.source_checked_at.slice(0,10)}</p>
-   <details><summary>Progress history</summary><ul>{plan.history.map(entry=><li key={entry.id}>{entry.recorded_at.slice(0,10)} · {statusLabel(entry.stage)}{entry.evidence&&' · '+entry.evidence}</li>)}</ul></details>
+   <p><a href={plan.source_url}>Source evidence</a> · Checked {formatPartnershipDate(partnershipDate(plan.source_checked_at))}</p>
+   <details><summary>Progress history</summary><ul>{plan.history.map(entry=><li key={entry.id}>{formatPartnershipDate(partnershipDate(entry.recorded_at))} · {statusLabel(entry.stage)}{entry.evidence&&' · '+entry.evidence}</li>)}</ul></details>
    {c.state!=='withdrawn'&&c.state!=='reported'&&owners.length>0&&<ProviderFollowupForm caseId={c.id} providers={providers} owners={owners} followup={plan}/>}
  </article>)}
  {c.state!=='withdrawn'&&c.state!=='reported'&&providers.length>0&&owners.length>0&&<section><h4>Identify a potential resource</h4><ProviderFollowupForm caseId={c.id} providers={providers} owners={owners}/></section>}

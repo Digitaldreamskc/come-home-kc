@@ -1,0 +1,202 @@
+.partnership-calendar {
+  margin-top: 26px;
+  padding: clamp(14px, 3vw, 24px);
+  border: 1px solid var(--line, #dce0e3);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.partnership-calendar-header,
+.partnership-calendar-toolbar,
+.partnership-calendar-search > div,
+.partnership-calendar-year-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.partnership-calendar-header,
+.partnership-calendar-toolbar {
+  justify-content: space-between;
+  align-items: end;
+}
+
+.partnership-calendar-header {
+  align-items: start;
+}
+
+.partnership-calendar-header h3,
+.partnership-calendar-header p,
+.partnership-calendar-month h4,
+.partnership-calendar-agenda h4 {
+  margin: 0;
+}
+
+.partnership-calendar-header p {
+  margin-top: 5px;
+}
+
+.partnership-calendar-toolbar {
+  margin-top: 18px;
+}
+
+.partnership-calendar .partnership-calendar-search {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  min-width: 0;
+}
+
+.partnership-calendar-search label {
+  font-weight: 650;
+}
+
+.partnership-calendar-search input,
+.partnership-calendar button {
+  min-height: 44px;
+  max-width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #c8cdd0;
+  border-radius: 8px;
+  background: #fff;
+  color: #16191b;
+  font: inherit;
+}
+
+.partnership-calendar button {
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.partnership-calendar button:disabled {
+  cursor: default;
+  opacity: .45;
+}
+
+.partnership-calendar button:hover:not(:disabled) {
+  background: #f3f4f5;
+}
+
+.partnership-calendar button[aria-pressed='true'],
+.partnership-calendar button[aria-pressed='true']:hover {
+  background: #fff1c9;
+  border-color: #9b6800;
+}
+
+.partnership-calendar button:focus-visible,
+.partnership-calendar input:focus-visible {
+  outline: 3px solid #086282;
+  outline-offset: 2px;
+}
+
+.partnership-calendar-year-controls button[aria-label] {
+  min-width: 44px;
+  font-size: 1.3rem;
+}
+
+.partnership-calendar-months {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(47px, 1fr));
+  gap: 6px;
+  margin: 16px 0;
+}
+
+.partnership-calendar-months button {
+  padding-inline: 3px;
+  font-size: .875rem;
+}
+
+.partnership-calendar-main,
+.partnership-calendar-year-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.partnership-calendar-month,
+.partnership-calendar-agenda {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line, #dce0e3);
+  border-radius: 12px;
+}
+
+.partnership-calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.partnership-calendar-days > span {
+  display: grid;
+  min-height: 26px;
+  place-items: center;
+  color: #51595e;
+  font-size: .75rem;
+}
+
+.partnership-calendar-days > button {
+  display: grid;
+  grid-template-rows: 1fr 5px;
+  place-items: center;
+  gap: 1px;
+  min-height: 42px;
+  padding: 4px 0 3px;
+  border-color: transparent;
+  font-size: .875rem;
+}
+
+.partnership-calendar-days > button::after {
+  content: '';
+}
+
+.partnership-calendar-days > button[data-has-items]::after {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #9b6800;
+}
+
+.partnership-calendar-days > button[aria-current='date'] {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.partnership-calendar-year {
+  margin-top: 18px;
+}
+
+.partnership-calendar-year-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13.5rem), 1fr));
+}
+
+.partnership-calendar .compact .partnership-calendar-days > button {
+  min-height: 32px;
+  font-size: .75rem;
+}
+
+.partnership-calendar-agenda ul {
+  margin: 8px 0;
+}
+
+.partnership-calendar-agenda li {
+  display: grid;
+  gap: 5px;
+  margin: 8px 0;
+  padding: 11px;
+}
+
+.partnership-calendar-agenda li > span,
+.partnership-calendar-agenda li > a {
+  font-size: .875rem;
+}
+
+.partnership-google-calendar {
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 650;
+}
