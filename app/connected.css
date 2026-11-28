@@ -25,3 +25,10 @@
 @media(max-width:600px){.header-actions{gap:4px}.header-actions>.button{font-size:14px;padding:10px}.section-menu{position:static}.header-inner .section-menu nav{right:0;top:100%}}
 
 .site-menu-hamburger{display:inline-block;width:17px;height:13px;border-block:2px solid currentColor;position:relative;flex-shrink:0}.site-menu-hamburger:after{content:'';position:absolute;top:4px;left:0;right:0;border-top:2px solid currentColor}.section-menu summary:after{display:none}.header-inner .section-menu nav{max-height:68vh;overflow-y:auto}
+@media (max-width: 360px) {
+  .site-header > .header-inner {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
+}
+
