@@ -136,3 +136,19 @@ main>.notice+.section-head h2{font-size:clamp(38px,4vw,56px)}
 .atlas-2kc-connect{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 18px;background:#fdb924;color:#171919;font-weight:700;font-size:14px;text-decoration:none;border-radius:9px;white-space:nowrap}
 @media(max-width:700px){.atlas-2kc-header-inner{width:calc(100% - 32px);gap:8px;padding:14px 0}.atlas-2kc-brand{font-size:17px}.atlas-2kc-brand small{font-size:7px;letter-spacing:1.4px}.atlas-2kc-actions{gap:4px}.atlas-2kc-menu summary{font-size:13px;padding:6px}.atlas-2kc-connect{font-size:12px;padding:9px}.atlas-2kc-menu{position:static}.atlas-2kc-menu nav{right:16px;top:100%}}
 @media(max-width:360px){.atlas-2kc-connect{display:none}}
+
+.capital-profile-filters { align-items: start; }
+.capital-profile-filters label { display: block; }
+.capital-profile-filters input[type="search"] { display: block; width: 100%; padding: .55rem; }
+.capital-profile-filters summary { cursor: pointer; padding: .5rem; }
+.capital-sector-options { background: var(--paper); border: 1px solid var(--line); padding: .75rem; }
+.capital-sector-options fieldset { max-height: 14rem; overflow: auto; margin: .5rem 0; }
+.capital-sector-options label[hidden] { display: none; }
+.capital-profile-card { min-width: 0; border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius); padding: 1.2rem; }
+.capital-profile-card h3 { margin-top: 0; }
+.capital-profile-details dl { margin: .75rem 0; }
+.capital-profile-details dl div { margin: .3rem 0; }
+.capital-profile-details dt { font-weight: 700; }
+.capital-profile-details dd { margin: 0; }
+.capital-profile-links { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.capital-profile-links .capital-website { background: #ffdf42; color: #171717; text-decoration: none; }

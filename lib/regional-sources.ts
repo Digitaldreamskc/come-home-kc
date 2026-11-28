@@ -15,7 +15,6 @@ export async function atlasProjection(){
  if(data.mode!=='live') throw Error('Live projection required');
  return data;
 }
-export async function atlasProviders(){const data=await atlasProjection();return data.resources.filter(r=>r.match_status==='verified_identity'&&r.profile_url.startsWith('https://'));}
 export async function regionalResearch(){const data=await atlasProjection();
  const entities=new Map(data.entities.map(e=>[e.entity_id,e.canonical_name]));
  return data.metrics.filter(m=>m.as_of && /^https:\/\//.test(m.source_url)&&entities.has(m.entity_id)).map(m=>({...m,entity:entities.get(m.entity_id)!}));
@@ -26,5 +25,18 @@ export async function approvedResources(){
  return await r.json() as {id:string;name:string;company:string;area:string;website:string}[];
 }
 
-export type CapitalProfile={entity_id:string;website:string;type:string;focus:string|null;stage:string|null;sector:string|null;check:string|null;source_url:string;updated_at:string};
-export async function capitalProfiles():Promise<CapitalProfile[]>{const r=await fetch(atlasURL+'/rest/v1/rpc/kc_capital_provider_profiles',{method:'POST',headers:{apikey:atlasKey,'Content-Type':'application/json'},body:'{}',cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Capital profiles unavailable');const data=await r.json();if(!Array.isArray(data))throw Error('Invalid profile response');return data;}
+export type CapitalProfile = {
+  entity_id: string; name: string; city: string | null; state: string | null;
+  website: string; type: string; focus: string | null; stage: string | null;
+  sector: string | null; sectors: string[]; check: string | null; source_url: string; updated_at: string;
+};
+export async function capitalProfiles(): Promise<CapitalProfile[]> {
+  const response = await fetch(atlasURL + '/rest/v1/rpc/kc_capital_discovery', {
+    method: 'POST', headers: { apikey: atlasKey, 'Content-Type': 'application/json' },
+    body: '{}', cache: 'no-store', signal: AbortSignal.timeout(15000),
+  });
+  if (!response.ok) throw Error('Capital profiles unavailable');
+  const data = await response.json();
+  if (!Array.isArray(data.profiles)) throw Error('Invalid profile response');
+  return data.profiles;
+}
