@@ -21,7 +21,7 @@ function sourceLink(url, label, className = '') {
   return safe ? `<a class="${className}" href="${escape(safe)}" target="_blank" rel="noopener noreferrer">${label}</a>` : '';
 }
 
-export function providerDetails(profile) {
+export function providerDetails(profile, { showResearch = false } = {}) {
   if (!profile) return '';
   const sector = [...new Set([profile.sector, ...profile.sectors].filter(Boolean))].join(', ');
   const facts = [['Stage', profile.stage], ['Sector', sector], ['Check size', profile.check]]
@@ -30,10 +30,11 @@ export function providerDetails(profile) {
     ${profile.focus ? `<p>${escape(profile.focus)}</p>` : ''}
     ${facts.length ? `<dl>${facts.map(([label, value]) =>
       `<div><dt>${label}</dt><dd>${escape(value)}</dd></div>`).join('')}</dl>` : ''}
-    <p class="capital-profile-links">
+    <div class="capital-profile-links">
       ${sourceLink(profile.website, 'Visit website', 'primary capital-website')}
+      ${showResearch ? `<button type="button" class="secondary" data-capital-research="${escape(profile.entity_id)}">Research history</button>` : ''}
       ${sourceLink(profile.source_url, 'Provider source')}
-    </p>
+    </div>
   </section>`;
 }
 
@@ -51,8 +52,10 @@ export function capitalDirectory(discovery) {
             ${discovery.sectors.map(sector =>
               `<label><input type="checkbox" value="${escape(sector)}"> ${escape(sector)}</label>`).join('')}
           </fieldset>
-          <button type="button" class="secondary" id="capital-sector-clear">Clear sectors</button>
-          <button type="button" class="secondary" id="capital-sector-done">Done</button>
+          <div class="capital-sector-actions">
+            <button type="button" class="secondary" id="capital-sector-clear">Clear sectors</button>
+            <button type="button" class="secondary" id="capital-sector-done">Done</button>
+          </div>
         </div>
       </details>
     </div>
@@ -81,8 +84,7 @@ export function mountCapitalDirectory(root, discovery, openResearch) {
     results.innerHTML = profiles.map(profile => `<article class="capital-profile-card">
       <h3>${escape(profile.name)}</h3>
       <p>${[profile.type, [profile.city, profile.state].filter(Boolean).join(', ')].filter(Boolean).map(escape).join(' · ')}</p>
-      ${providerDetails(profile)}
-      <button type="button" class="secondary" data-capital-research="${escape(profile.entity_id)}">Research history</button>
+      ${providerDetails(profile, { showResearch: true })}
     </article>`).join('') || '<p>No matching providers.</p>';
   }
 

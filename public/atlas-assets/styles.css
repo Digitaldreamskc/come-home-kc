@@ -150,5 +150,7 @@ main>.notice+.section-head h2{font-size:clamp(38px,4vw,56px)}
 .capital-profile-details dl div { margin: .3rem 0; }
 .capital-profile-details dt { font-weight: 700; }
 .capital-profile-details dd { margin: 0; }
-.capital-profile-links { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.capital-profile-links,
+.capital-sector-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.capital-profile-links { margin-top: .75rem; }
 .capital-profile-links .capital-website { background: #ffdf42; color: #171717; text-decoration: none; }
