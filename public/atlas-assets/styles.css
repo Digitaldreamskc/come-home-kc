@@ -154,3 +154,33 @@ main>.notice+.section-head h2{font-size:clamp(38px,4vw,56px)}
 .capital-sector-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
 .capital-profile-links { margin-top: .75rem; }
 .capital-profile-links .capital-website { background: #ffdf42; color: #171717; text-decoration: none; }
+
+.provider-alphabet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 16px 0 12px;
+}
+
+.provider-alphabet button {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  min-height: 34px;
+  padding: 4px;
+  border: 1px solid #d7d3c8;
+  border-radius: 5px;
+  background: #fffdf7;
+  color: #171919;
+  font-family: inherit;
+  font-size: .8125rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.provider-alphabet button:first-child { padding-inline: 8px; }
+.provider-alphabet button:hover:not(:disabled) { background: #f4f0e4; }
+.provider-alphabet button:disabled { opacity: .45; cursor: default; }
+.provider-alphabet button[aria-pressed='true'] { background: #ffebae; border-color: #9b6800; }
+.provider-alphabet button:focus-visible { outline: 2px solid #086282; outline-offset: 2px; }
+.provider-alphabet button[hidden] { display: none; }

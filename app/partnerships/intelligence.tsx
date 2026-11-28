@@ -2,10 +2,11 @@ import Link from 'next/link';
 import { directoryEntries } from '@/lib/atlas-discovery';
 import { ecosystemProviders } from '@/lib/ecosystem-providers';
 import { approvedResources, regionalResearch } from '@/lib/regional-sources';
-import { matchesSectors } from '@/lib/sector-taxonomy';
+import { jobSectors, matchesSectors } from '@/lib/sector-taxonomy';
 import { session } from '@/lib/supabase';
 import { save } from '../ecosystem/actions';
 import IntelligenceSearch from './intelligence-search';
+import IntelligenceCapital from './intelligence-capital';
 import '@/app/regional-intelligence/intelligence.css';
 
 type Commitment = { id: string; pillar: string; deliverable: string; state: string };
@@ -37,7 +38,8 @@ export default async function IntelligenceWorkspace({ agreement, commitments, qu
   const employersMatched = employers.data?.filter(e => matchesSectors([...e.sectors,e.industry ?? ''],sectors) && relevant(e.name,e.industry,e.description,...e.sectors));
   const jobsMatched = jobs.data?.filter(j => {
     const employer = employerById.get(j.organization_id);
-    return matchesSectors([j.industry ?? '', ...(employer?.sectors ?? [])],sectors) && relevant(j.title,j.industry,employer?.name);
+    const documented = jobSectors(j.industry,employer);
+    return matchesSectors(documented,sectors) && relevant(j.title,j.industry,employer?.name,...documented);
   });
 
   return <section>
@@ -45,17 +47,9 @@ export default async function IntelligenceWorkspace({ agreement, commitments, qu
     <p><Link href="/regional-intelligence">Public intelligence</Link> · <Link href="/atlas">Full Capital Atlas</Link> · <Link href={'/partnerships?view=follow-ups'+(agreement?'&agreement='+agreement:'')}>Review cases</Link></p>
     <IntelligenceSearch agreement={agreement} query={query} sectors={sectors}/>
     <h3>Capital providers</h3>
-    {capitalMatches === undefined ? <p>Capital profiles unavailable.</p> : !capitalMatches.length && <p>No matching capital providers.</p>}
-    {capitalMatches?.map(p => <article key={p.id}><h4>{p.name}</h4>
-      <p>{[p.type,[p.city,p.state].filter(Boolean).join(', ')].filter(Boolean).join(' · ')}</p>
-      {p.focus && <p>{p.focus}</p>}
-      {(p.stage || p.sector || p.sectors.length > 0 || p.check) && <dl>
-        {p.stage && <><dt>Stage</dt><dd>{p.stage}</dd></>}
-        {(p.sector || p.sectors.length > 0) && <><dt>Sector</dt><dd>{[...new Set([p.sector,...p.sectors].filter(Boolean))].join(', ')}</dd></>}
-        {p.check && <><dt>Check size</dt><dd>{p.check}</dd></>}
-      </dl>}
-      <p>{secureLink(p.website,'Provider website')} · {secureLink(p.source,'Source evidence')}</p>
-    </article>)}
+    {capitalMatches === undefined ? <p>Capital profiles unavailable.</p> :
+      <IntelligenceCapital key={JSON.stringify([query,sectors])} providers={capitalMatches}
+        searching={Boolean(query?.trim() || sectors.length)}/>}
     <h3>Entrepreneurial support</h3>
     {supportMatches === undefined ? <p>Support directory unavailable.</p> : !supportMatches.length && <p>No matching support providers.</p>}
     {supportMatches?.map(p => <article key={p.id}><h4>{p.name}</h4><p>{p.description}</p>{secureLink(p.website,'Provider website')}</article>)}

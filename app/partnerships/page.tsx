@@ -2,6 +2,8 @@ import { AgreementForm,Manage } from './configure';
 import { importIntake } from './intake';
 import Cases, { type Case } from './cases';
 import PartnershipCalendar from './partnership-calendar';
+import WorkspaceSidebar from './workspace-sidebar';
+import './workspace-sidebar.css';
 import './partnership-calendar.css';
 import { calendarDay, formatPartnershipDate, partnershipDate, type PartnershipCalendarEntry } from '@/lib/partnership-calendar';
 import { type ProviderFollowup } from '@/lib/provider-followups';
@@ -35,8 +37,8 @@ export default async function Partnerships({searchParams}:{searchParams:Promise<
   const {db,user} = await session();
   if (!user) {
     const next = new URLSearchParams();
-    if (query.view === 'calendar') {
-      next.set('view', 'calendar');
+    if (query.view === 'calendar' || query.view === 'intelligence') {
+      next.set('view', query.view);
       if (query.agreement && jobIdPattern.test(query.agreement)) next.set('agreement', query.agreement);
     }
     redirect('/login?next=' + encodeURIComponent('/partnerships' + (next.size ? '?' + next : '')));
@@ -91,7 +93,7 @@ export default async function Partnerships({searchParams}:{searchParams:Promise<
   ] : [];
   return <><SiteHeader/><main className="work-room"><div className="work-heading"><p className="eyebrow">{staff?'2KC team workspace':a?'Employer partner workspace':'Participant workspace'}</p><h1>{staff?'Partner operations':a?.employer||'Your connections'}</h1>
   {a&&<p>{a.synthetic?'Validation agreement · ':''}{new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(a.value)} annual partnership · {formatPartnershipDate(a.termStart)} to {formatPartnershipDate(a.termEnd)}</p>}</div>
-  <div className="work-layout"><aside><nav className="work-nav" aria-label="Workspace sections">{views.map(v=><Link aria-current={view===v?'page':undefined} key={v} href={href(v)}>{v}</Link>)}<Link href={staff?'/admin':'/portal'}>{staff?'Team records':'My account'}</Link></nav></aside>
+  <div className="work-layout"><WorkspaceSidebar links={views.map(label => ({ label, href: href(label) }))} current={view} staff={staff}/>
   <div className="work-panel">{query.status&&<p role="status">{query.status==='saved'?'Saved.':query.status==='intake-access'?'Forms read access and an authorized synthetic response ID are required.':'The record could not be updated. Check the current status and try again.'}</p>}
   {(error||publication.error)&&<p role="alert">Partnership records could not be loaded.</p>}
   {agreements.length>1&&<form className="agreement-picker"><input type="hidden" name="view" value={view.toLowerCase()}/><label>Employer partnership<select name="agreement" defaultValue={a?.id}>{agreements.map(x=><option key={x.id} value={x.id}>{x.employer}</option>)}</select></label><button>Open agreement</button></form>}

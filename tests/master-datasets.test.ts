@@ -31,3 +31,19 @@ test('intake accepts supported sectors and keeps applicant contact distinct from
   assert.equal(applicationSchema.safeParse({...application, selections:{}}).success, false);
   assert.equal(applicationSchema.safeParse({...application, consent:false}).success, false);
 });
+
+test('job searches share the capital taxonomy and prefer a role sector over employer fallback', async () => {
+  const { jobSectors } = await import('../lib/sector-taxonomy');
+  const { DEFAULT_FILTERS, filterJobs, filtersToSearch, parseFilters } = await import('../lib/filters');
+  assert.deepEqual(jobSectors('', {industry:'Advanced manufacturing'}), ['Industrials']);
+  assert.deepEqual(jobSectors('Healthcare', {industry:'Manufacturing'}), ['Healthcare']);
+  const filters = parseFilters('?sector=Industrials&sector=Healthcare&sector=Unknown');
+  assert.deepEqual(filters.sectors, ['Industrials','Healthcare']);
+  assert.deepEqual(new URLSearchParams(filtersToSearch(filters)).getAll('sector'), ['Industrials','Healthcare']);
+  const employer = {id:'org', name:'Company', industry:'Manufacturing', status:'published', verification_status:'verified'};
+  const listing = {id:'role', organization_id:'org', title:'Technician', description:'Full-time role', industry:'',
+    work_mode:'onsite', status:'active', verified_at:'2026-01-01', expires_at:'2099-01-01',
+    application_url:'https://example.com/apply', job_locations:[{state:'MO', verified_at:'2026-01-01'}]};
+  assert.deepEqual(filterJobs([listing],[employer],{...DEFAULT_FILTERS,sectors:['Industrials']}),[listing]);
+  assert.deepEqual(filterJobs([listing],[employer],{...DEFAULT_FILTERS,sectors:['Healthcare']}),[]);
+});

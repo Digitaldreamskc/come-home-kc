@@ -5,9 +5,11 @@ export const jobIdPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9
 export function introductionDestination(id:string){return jobIdPattern.test(id)?`/portal?view=profile&job=${id}#request-introduction`:'/portal?view=profile';}
 export function safeAuthDestination(value:string|null){
  if(value==='/partnerships'||(value&&/^\/employers\/[0-9a-f-]{36}$/.test(value)))return value;
- if(value&&/^\/partnerships\?view=calendar(?:&agreement=[0-9a-f-]{36})?$/i.test(value)){
-  const agreement=new URLSearchParams(value.split('?')[1]).get('agreement');
-  return agreement&&jobIdPattern.test(agreement)?'/partnerships?view=calendar&agreement='+agreement:'/partnerships?view=calendar';
+ if(value&&/^\/partnerships\?view=(?:calendar|intelligence)(?:&agreement=[0-9a-f-]{36})?$/i.test(value)){
+  const params=new URLSearchParams(value.split('?')[1]);
+  const view=params.get('view')?.toLowerCase();
+  const agreement=params.get('agreement');
+  return '/partnerships?view='+view+(agreement&&jobIdPattern.test(agreement)?'&agreement='+agreement:'');
  }
  if(value==='/reset-password'||value==='/connections')return value;
  if(!value||!value.startsWith('/portal')||value.includes('\\'))return '/portal';

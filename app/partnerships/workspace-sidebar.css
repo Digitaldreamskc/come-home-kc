@@ -1,0 +1,120 @@
+.workspace-sidebar {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+  min-width: 0;
+}
+
+.workspace-sidebar-desktop,
+.workspace-sidebar-mobile {
+  background: #f8f7f3;
+  border: 1px solid #e5e1d6;
+  border-radius: 12px;
+}
+
+.workspace-sidebar-nav {
+  display: grid;
+  gap: 18px;
+  padding: 14px 10px;
+}
+
+.workspace-sidebar-group {
+  display: grid;
+  gap: 3px;
+}
+
+.workspace-sidebar-group > span {
+  margin: 2px 10px 4px;
+  color: #53534b;
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.workspace-sidebar-nav a {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 7px 10px;
+  border-inline-start: 3px solid transparent;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #171919;
+  font-size: .875rem;
+  font-weight: 650;
+}
+
+.workspace-sidebar-nav a:hover { background: #edeae2; }
+
+.workspace-sidebar-nav [aria-current='page'],
+.workspace-sidebar-nav [aria-current='page']:hover {
+  background: #ffebae;
+  border-inline-start-color: #996600;
+}
+.workspace-sidebar-mobile { display: none; }
+
+@media (max-width: 760px) {
+  .workspace-sidebar { position: static; margin-bottom: 20px; }
+  .workspace-sidebar-desktop { display: none; }
+  .workspace-sidebar-mobile { display: block; }
+  .workspace-sidebar-mobile summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    min-height: 46px;
+    padding: 9px 13px;
+    color: #171919;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .workspace-sidebar-mobile summary::-webkit-details-marker { display: none; }
+  .workspace-sidebar-mobile summary > span:nth-child(2) {
+    margin-inline-start: auto;
+    color: #53534b;
+    font-size: .875rem;
+  }
+  .workspace-sidebar-mobile summary::after { content: '⌄'; }
+  .workspace-sidebar-mobile[open] summary::after { content: '⌃'; }
+  .workspace-sidebar-mobile nav { padding-top: 5px; }
+}
+
+.work-panel .intelligence-search {
+  max-width: none;
+  margin: 16px 0 20px;
+}
+
+.intelligence-search-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.intelligence-search > button { justify-self: start; }
+
+.intelligence-capital-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 12px;
+}
+
+.work-panel .intelligence-capital-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  margin: 0;
+  padding: 16px;
+  background: #fffdf7;
+  border: 1px solid #e5e1d6;
+}
+
+.work-panel .intelligence-capital-card :is(h4, p, dl, dd) { margin: 0; }
+.intelligence-capital-card dt { font-weight: 650; }
+
+.intelligence-capital-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 6px;
+}

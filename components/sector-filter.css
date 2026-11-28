@@ -1,0 +1,116 @@
+.sector-filter {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.sector-filter-label,
+.sector-filter .sector-search-label {
+  font-size: .8125rem;
+  font-weight: 650;
+}
+
+.sector-filter .sector-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #c9c5b8;
+  border-radius: 8px;
+  background: #fffdf7;
+  color: #171919;
+  text-align: left;
+  font-size: .875rem;
+}
+
+.sector-trigger span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.sector-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 30;
+  width: min(330px, calc(100vw - 40px));
+  margin-top: 6px;
+  padding: 12px;
+  border: 1px solid #d7d3c8;
+  border-radius: 10px;
+  background: #fffdf7;
+  box-shadow: 0 8px 20px #1919191a;
+}
+
+.sector-filter-inline .sector-panel {
+  position: static;
+  width: 100%;
+  margin: 0;
+  box-shadow: none;
+}
+
+.sector-filter .sector-search-label { display: grid; gap: 5px; margin: 0; }
+.sector-filter .sector-search-label input {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 7px 9px;
+  border: 1px solid #c9c5b8;
+  border-radius: 7px;
+  background: white;
+  font-size: .875rem;
+}
+
+.sector-filter .sector-options {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  min-width: 0;
+  max-height: 14rem;
+  overflow: auto;
+  margin: 10px 0;
+  padding: 4px 7px 7px;
+  border: 1px solid #d7d3c8;
+  border-radius: 7px;
+}
+
+.sector-filter .sector-options legend { padding-inline: 4px; font-size: .8125rem; font-weight: 650; }
+.sector-filter .sector-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 27px;
+  margin: 0;
+  padding: 3px 4px;
+  border-radius: 4px;
+  font-size: .875rem;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.sector-filter .sector-options label:hover { background: #f1eee4; }
+.sector-filter .sector-options input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  min-width: 0;
+  flex: 0 0 16px;
+  margin: 0;
+  padding: 0;
+  accent-color: #171919;
+}
+
+.sector-footer { display: flex; flex-wrap: wrap; gap: 8px; }
+.sector-filter .sector-footer button {
+  min-height: 36px;
+  padding: 6px 11px;
+  border: 1px solid #c9c5b8;
+  border-radius: 7px;
+  background: #fffdf7;
+  color: #171919;
+  font-size: .8125rem;
+}
+
+.sector-filter .sector-footer button:last-child { background: #fdb924; border-color: #fdb924; }

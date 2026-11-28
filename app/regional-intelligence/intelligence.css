@@ -3,7 +3,6 @@
 
 .ecosystem-card{gap:10px}.ecosystem-category{font-size:11px;font-weight:700;color:var(--muted);align-self:flex-start;background:#f4f3ee;padding:4px 8px;border-radius:5px}.ecosystem-card h3{font-size:21px;line-height:1.25}.ecosystem-card .ecosystem-location{font-size:12px;color:var(--muted)}.ecosystem-needs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}.ecosystem-needs span{font-size:11px;padding:3px 7px;border:1px solid var(--line,#ddd);border-radius:5px}.ecosystem-visit{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fdb924;color:#171919!important;text-decoration:none!important;font-size:13px;font-weight:700;padding:10px 13px;border-radius:7px;margin-top:auto}.ecosystem-visit:hover{background:#f4ae17}.ecosystem-more{margin:30px 0 12px;padding:24px;background:var(--paper,#fffefb);border:1px solid var(--line,#ddd);border-radius:14px}.ecosystem-more p{margin:8px 0 14px}.ecosystem-more a{font-weight:700;text-decoration:underline}.ecosystem-note{font-size:12px;color:var(--muted)}
 
-.sector-filter{position:relative;min-width:0;display:grid;gap:6px;align-content:start}.sector-filter-label{font-size:12px;font-weight:700}.sector-trigger{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:44px;padding:10px 12px;border:1px solid #ccc;border-radius:7px;background:#fff;color:#171919;text-align:left;font-size:13px}.sector-panel{position:absolute;top:100%;right:0;margin-top:6px;width:min(330px,calc(100vw - 40px));background:#fffefb;border:1px solid #ddd;box-shadow:0 10px 28px #0002;border-radius:12px;z-index:30;padding:12px}.sector-options{max-height:280px;overflow-y:auto;display:grid;gap:2px;margin:8px 0}.atlas-search .sector-options label{display:flex;align-items:center;gap:9px;padding:8px;border-radius:6px;font-weight:400;font-size:13px}.atlas-search .sector-options label:hover{background:#f4f3ee}.atlas-search .sector-options input{width:17px;height:17px;min-height:0;flex:0 0 17px;accent-color:#171919}.sector-footer{display:flex;justify-content:space-between;gap:8px}.sector-footer button{padding:7px 12px;border:1px solid #ddd;border-radius:6px;background:#fff}.sector-footer button:last-child{background:#fdb924;border-color:#fdb924}.sector-trigger span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .resource-application { display: grid; gap: 1rem; max-width: 52rem; }
 .resource-application fieldset { min-width: 0; display: grid; gap: .75rem; padding: 1rem; border: 1px solid #c9c6bc; border-radius: .5rem; }
@@ -11,7 +10,6 @@
 .resource-application label { display: grid; gap: .3rem; }
 .resource-application .application-check { display: flex; align-items: baseline; gap: .6rem; }
 .resource-application :is(input:not([type="checkbox"]), textarea, select) { width: 100%; padding: .55rem; }
-.resource-application .sector-options label { display: flex; }
 .resource-application summary { cursor: pointer; font-weight: 600; padding-block: .3rem; }
 .application-fields { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,16rem),1fr)); gap: .65rem; }
 .resource-application > button { justify-self: start; }

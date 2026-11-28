@@ -1,3 +1,4 @@
+import { providerAlphabet, providerInitial, providerLetters } from './provider-alphabet.js';
 import { escapeHTML as escape, safeURL } from './domain.js';
 
 export async function fetchCapitalDiscovery(config) {
@@ -59,6 +60,9 @@ export function capitalDirectory(discovery) {
         </div>
       </details>
     </div>
+    <div class="provider-alphabet" role="group" aria-label="Browse providers by letter">
+      ${['All', ...providerLetters].map(letter => `<button type="button" data-provider-letter="${letter}">${letter}</button>`).join('')}
+    </div>
     <p class="count" id="capital-profile-count" role="status"></p>
     <div class="cards" id="capital-profile-results"></div>`;
 }
@@ -69,6 +73,8 @@ export function mountCapitalDirectory(root, discovery, openResearch) {
   const search = root.querySelector('#capital-provider-search');
   const picker = root.querySelector('#capital-sector-picker');
   const sectorSearch = root.querySelector('#capital-sector-search');
+  const letters = [...root.querySelectorAll('[data-provider-letter]')];
+  let preferred = '';
   const checkboxes = [...picker.querySelectorAll('input[type="checkbox"]')];
   const matches = (value, term) => value.toLowerCase().includes(term.trim().toLowerCase());
 
@@ -79,23 +85,39 @@ export function mountCapitalDirectory(root, discovery, openResearch) {
       matches([profile.name, profile.type, profile.city, profile.state, profile.focus,
         profile.stage, profile.sector, ...profile.sectors].filter(Boolean).join(' '), search.value)
     );
+    const { available, active } = providerAlphabet(profiles, preferred, Boolean(search.value.trim() || selected.length));
+    const visible = active === 'All' ? profiles : profiles.filter(profile => providerInitial(profile.name) === active);
+    for (const button of letters) {
+      const letter = button.dataset.providerLetter;
+      button.hidden = letter === '#' && !available.has(letter);
+      button.disabled = letter !== 'All' && !available.has(letter);
+      button.setAttribute('aria-pressed', String(letter === active));
+    }
     root.querySelector('#capital-sector-count').textContent = selected.length ? `(${selected.length} selected)` : '';
-    root.querySelector('#capital-profile-count').textContent = `${profiles.length} matching providers`;
-    results.innerHTML = profiles.map(profile => `<article class="capital-profile-card">
+    root.querySelector('#capital-profile-count').textContent = visible.length === profiles.length ? `${profiles.length} matching providers` : `Showing ${visible.length} of ${profiles.length} matching providers`;
+    results.innerHTML = visible.map(profile => `<article class="capital-profile-card">
       <h3>${escape(profile.name)}</h3>
       <p>${[profile.type, [profile.city, profile.state].filter(Boolean).join(', ')].filter(Boolean).map(escape).join(' · ')}</p>
       ${providerDetails(profile, { showResearch: true })}
     </article>`).join('') || '<p>No matching providers.</p>';
   }
 
-  search.addEventListener('input', renderResults);
-  picker.addEventListener('change', renderResults);
+  function applyFilters() {
+    preferred = '';
+    renderResults();
+  }
+  search.addEventListener('input', applyFilters);
+  picker.addEventListener('change', applyFilters);
+  letters.forEach(button => button.addEventListener('click', () => {
+    preferred = button.dataset.providerLetter;
+    renderResults();
+  }));
   sectorSearch.addEventListener('input', () => {
     checkboxes.forEach(input => { input.closest('label').hidden = !matches(input.value, sectorSearch.value); });
   });
   root.querySelector('#capital-sector-clear').addEventListener('click', () => {
     checkboxes.forEach(input => { input.checked = false; });
-    renderResults();
+    applyFilters();
   });
   function closePicker() {
     picker.open = false;
